@@ -1,7 +1,7 @@
 export interface ProjectItem {
   title: string;
-  /** Optional status badge shown above the link. */
-  status?: { label: string; variant: 'active' | 'closed' };
+  /** Optional logo shown to the left of the content. */
+  logo?: string;
   href: string;
   /** Visible link text (usually the bare domain). */
   linkLabel: string;
@@ -12,18 +12,26 @@ export interface ProjectItem {
 export const petProjects: ProjectItem[] = [
   {
     title: 'Tennis platform',
-    status: { label: 'Active', variant: 'active' },
+    logo: '/logo-courtcount.png',
     href: 'https://courtcount.ru',
     linkLabel: 'courtcount.ru',
     description: 'Simplifying tennis tournament scoring for professional referees',
   },
   {
-    title: 'Subscription App',
-    status: { label: 'Closed ♥️ R.I.P', variant: 'closed' },
-    href: 'https://subsflow.tech',
-    linkLabel: 'subsflow.tech',
+    title: 'Shelfly',
+    logo: '/logo-shelfly.svg',
+    href: 'https://shelfly.ru',
+    linkLabel: 'shelfly.ru',
     description:
-      'Tracking subscriptions becomes simple and convenient. Enter your subscription details, track payment deadlines, and receive timely notifications. Never miss a payment deadline!',
+      'Track your reading progress, keep a shelf of your books, and stay motivated to finish what you start',
+  },
+  {
+    title: 'Cobee',
+    logo: '/logo-cobee.svg',
+    href: 'https://cobee.ru',
+    linkLabel: 'cobee.ru',
+    description:
+      'An app that brings small businesses and their customers together in one convenient place',
   },
 ];
 

@@ -1,23 +1,21 @@
 import type { ProjectItem } from '../data/projects';
 import { ExternalLinkIcon } from '../icons';
 
-export function ProjectCard({ title, status, href, linkLabel, description }: ProjectItem) {
+export function ProjectCard({ title, logo, href, linkLabel, description }: ProjectItem) {
   return (
     <article className="project">
-      <h2>{title}</h2>
+      {logo && <img className="project-logo" src={logo} alt={`${title} logo`} loading="lazy" />}
 
-      {status && (
-        <div className="project-status-row">
-          <span className={`status-pill status-${status.variant}`}>{status.label}</span>
-        </div>
-      )}
+      <div className="project-body">
+        <h2>{title}</h2>
 
-      <a href={href} target="_blank" rel="noopener noreferrer" className="project-link">
-        <ExternalLinkIcon />
-        {linkLabel}
-      </a>
+        <a href={href} target="_blank" rel="noopener noreferrer" className="project-link">
+          <ExternalLinkIcon />
+          {linkLabel}
+        </a>
 
-      <p>{description}</p>
+        <p>{description}</p>
+      </div>
     </article>
   );
 }
