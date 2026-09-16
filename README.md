@@ -15,11 +15,19 @@ keeping the original look & feel pixel-for-pixel.
 
 ## Pages
 
-| Route        | Page         | Legacy URL       |
-| ------------ | ------------ | ---------------- |
-| `/`          | Home         | `index.html`     |
-| `/projects`  | Pet-projects | `projects.html`  |
-| `/utils`     | Utils        | `utils.html`     |
+| Route         | Page                 | Legacy URL      |
+| ------------- | -------------------- | --------------- |
+| `/`           | Home                 | `index.html`    |
+| `/projects`   | Pet-projects         | `projects.html` |
+| `/utils`      | Utils                | `utils.html`    |
+| `/utils/cron` | Cron Expression Tool | —               |
+
+`/utils/cron` is a self-contained cron helper: it explains an expression in
+plain English, breaks it down field by field, lists the next runs in the
+visitor's time zone, and lets you build a string from per-field inputs or
+presets. The current expression lives in the `?expr=` query parameter, so a
+link can be shared. Parsing, describing and scheduling live in
+`src/lib/cron.ts` with no runtime dependencies.
 
 The old `*.html` URLs redirect to their clean equivalents, so existing links
 keep working.
@@ -42,7 +50,8 @@ src/
   components/      # shared UI (ProjectCard)
   data/            # content for the Projects & Utils lists
   hooks/           # useTypedRole (terminal typing), usePageMeta (title/body class)
-  pages/           # Home, Projects, Utils
+  lib/             # cron.ts — cron parser, describer and next-run scheduler
+  pages/           # Home, Projects, Utils, Cron
   icons.tsx        # inline SVG icons
   index.css        # design tokens + all styling (ported 1:1)
   App.tsx          # routes

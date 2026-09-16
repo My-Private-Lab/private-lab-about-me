@@ -5,6 +5,8 @@ export interface ProjectItem {
   href: string;
   /** Visible link text (usually the bare domain). */
   linkLabel: string;
+  /** Set for pages of this site — rendered as a client-side route, not an external link. */
+  internal?: boolean;
   description: string;
 }
 
@@ -43,6 +45,14 @@ export const utils: ProjectItem[] = [
     linkLabel: 'jwt-decoder.isavin.dev',
     description:
       'Decode & verify JSON Web Tokens right in your browser — nothing leaves the page',
+  },
+  {
+    title: 'Cron Expression Tool',
+    href: '/utils/cron',
+    linkLabel: 'isavin.dev/utils/cron',
+    internal: true,
+    description:
+      'Explain any cron string in plain English, see its next runs, and build your own field by field',
   },
   {
     title: 'Snowflake ID Decoder',

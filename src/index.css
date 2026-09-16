@@ -330,6 +330,313 @@ body.home {
 }
 
 /* ===========================================================
+   Cron tool
+   =========================================================== */
+.card-tool {
+    max-width: 640px;
+}
+
+.cron-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.cron-input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: border-color 0.25s ease;
+}
+
+.cron-input:focus-visible,
+.cron-field-input:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.cron-input-invalid {
+    border-color: #f85149;
+}
+
+.cron-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--accent);
+    background-color: var(--accent-dim);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 0 14px;
+    cursor: pointer;
+    transition: border-color 0.25s ease;
+}
+
+.cron-copy:hover,
+.cron-copy:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.cron-copy svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Per-field editors — the "builder" half of the tool */
+.cron-fields {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.cron-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.cron-field-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cron-field-input {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    text-align: center;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 6px;
+    transition: border-color 0.25s ease;
+}
+
+.cron-field-hint {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.cron-summary {
+    font-size: 1.05rem;
+    color: var(--text);
+    background-color: var(--accent-dim);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+.cron-error {
+    font-size: 0.92rem;
+    color: #ffa198;
+    background-color: rgba(248, 81, 73, 0.1);
+    border-left: 3px solid #f85149;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+}
+
+.cron-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.cron-note code {
+    font-family: var(--font-mono);
+    color: var(--accent);
+}
+
+.cron-heading {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin: 26px 0 10px;
+}
+
+.cron-tz {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.7;
+}
+
+.cron-breakdown,
+.cron-runs {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cron-breakdown li {
+    display: grid;
+    grid-template-columns: 64px 110px 1fr;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding: 8px 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.cron-breakdown code {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    overflow-wrap: anywhere;
+}
+
+.cron-breakdown-label {
+    color: var(--text-muted);
+}
+
+.cron-breakdown-value {
+    color: var(--text);
+}
+
+.cron-runs {
+    counter-reset: run;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+
+.cron-runs li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    color: var(--text);
+    padding: 8px 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.cron-runs li::before {
+    counter-increment: run;
+    content: counter(run);
+    color: var(--accent);
+    opacity: 0.7;
+}
+
+.cron-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cron-preset {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: color 0.25s ease, border-color 0.25s ease;
+}
+
+.cron-preset:hover,
+.cron-preset:focus-visible {
+    color: var(--accent);
+    border-color: var(--accent);
+    outline: none;
+}
+
+.cron-syntax {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cron-syntax-row {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.85rem;
+}
+
+.cron-syntax dt code {
+    font-family: var(--font-mono);
+    color: var(--accent);
+}
+
+.cron-syntax dd {
+    color: var(--text);
+}
+
+.cron-syntax-example {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+    .card-tool {
+        padding: 22px 14px;
+    }
+
+    .cron-input {
+        font-size: 0.95rem;
+        letter-spacing: 0;
+    }
+
+    .cron-copy {
+        padding: 0 10px;
+    }
+
+    /* Five side-by-side inputs are too cramped on a phone. */
+    .cron-fields {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .cron-summary {
+        font-size: 0.98rem;
+    }
+
+    .cron-breakdown li {
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+    }
+
+    .cron-breakdown-label {
+        display: none;
+    }
+
+    .cron-syntax-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+}
+
+/* ===========================================================
    Accessibility — respect reduced motion
    =========================================================== */
 @media (prefers-reduced-motion: reduce) {
