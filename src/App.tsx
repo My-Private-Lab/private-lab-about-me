@@ -4,6 +4,7 @@ import Projects from './pages/Projects';
 import Utils from './pages/Utils';
 import Cron from './pages/Cron';
 import Jwt from './pages/Jwt';
+import Snowflake from './pages/Snowflake';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/utils" element={<Utils />} />
       <Route path="/utils/cron" element={<Cron />} />
       <Route path="/utils/jwt" element={<Jwt />} />
+      <Route path="/utils/snowflake" element={<Snowflake />} />
 
       {/* Preserve the original static URLs (and any unknown path). */}
       <Route path="/index.html" element={<Navigate to="/" replace />} />

@@ -852,6 +852,175 @@ body.home {
 }
 
 /* ===========================================================
+   Snowflake ID decoder
+   =========================================================== */
+.card-tool {
+    --sf-timestamp: #a5d6ff;
+    --sf-node: #ff7b9c;
+    --sf-counter: #d2a8ff;
+}
+
+.sf-input {
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+}
+
+.sf-actions {
+    margin-bottom: 20px;
+}
+
+/* The ID in binary, coloured by part like the component labels below. */
+.sf-binary {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+    overflow-wrap: anywhere;
+    padding: 10px 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.sf-part-sign { color: var(--text-muted); }
+.sf-part-timestamp { color: var(--sf-timestamp); }
+.sf-part-node { color: var(--sf-node); }
+.sf-part-counter { color: var(--sf-counter); }
+
+.tool-rows .sf-part-label.sf-part-timestamp { color: var(--sf-timestamp); }
+.tool-rows .sf-part-label.sf-part-node { color: var(--sf-node); }
+.tool-rows .sf-part-label.sf-part-counter { color: var(--sf-counter); }
+
+.sf-parts li {
+    display: grid;
+    grid-template-columns: 84px 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.sf-part-value {
+    font-family: var(--font-mono);
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.sf-part-hint {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+/* Bit-count stepper: − 10 bits + */
+.sf-bits {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.sf-bits-value {
+    min-width: 5.5ch;
+    text-align: center;
+}
+
+.sf-step,
+.sf-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1;
+    color: var(--accent);
+    background-color: var(--accent-dim);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.25s ease;
+}
+
+.sf-step:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.sf-step:focus-visible,
+.sf-icon-button:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.sf-icon-button {
+    color: var(--text-muted);
+    background-color: transparent;
+}
+
+.sf-icon-button svg {
+    width: 15px;
+    height: 15px;
+}
+
+.sf-layout-note {
+    margin-top: 8px;
+}
+
+.sf-history li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sf-history-id {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    color: inherit;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.sf-history-id:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+}
+
+.sf-history-meta {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+    .sf-input {
+        font-size: 0.95rem;
+        letter-spacing: 0;
+    }
+
+    .sf-button-text {
+        display: none;
+    }
+
+    .sf-parts li {
+        grid-template-columns: 1fr auto;
+        grid-template-areas: 'label bits' 'value value';
+        row-gap: 4px;
+    }
+
+    .sf-parts .sf-part-label { grid-area: label; }
+    .sf-parts .sf-bits { grid-area: bits; }
+    .sf-parts .sf-part-value { grid-area: value; }
+}
+
+/* ===========================================================
    Hover effects — only on devices with a real pointer.
    On touch screens :hover "sticks" after a tap, leaving cards lifted
    and links underlined until the user taps elsewhere.
@@ -880,6 +1049,15 @@ body.home {
     .tool-chip:hover {
         color: var(--accent);
         border-color: var(--accent);
+    }
+
+    .sf-step:not(:disabled):hover {
+        border-color: var(--accent);
+    }
+
+    .sf-icon-button:hover,
+    .sf-history-id:hover code {
+        color: var(--accent);
     }
 }
 
@@ -937,6 +1115,25 @@ body.home {
         inset: -9px 0;
     }
 
+    /* 44px hit area around the compact steppers and icon buttons. */
+    .sf-step,
+    .sf-icon-button {
+        position: relative;
+        width: 30px;
+        height: 30px;
+    }
+
+    .sf-step::after,
+    .sf-icon-button::after {
+        content: '';
+        position: absolute;
+        inset: -7px;
+    }
+
+    .sf-bits {
+        gap: 8px;
+    }
+
     .back-link {
         box-sizing: content-box;
         padding: 12px;
@@ -949,7 +1146,10 @@ body.home {
     .projects-link:active,
     .project-link:active,
     .tool-button:active,
-    .tool-chip:active {
+    .tool-chip:active,
+    .sf-step:active,
+    .sf-icon-button:active,
+    .sf-history-id:active {
         opacity: 0.7;
     }
 }

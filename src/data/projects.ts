@@ -57,8 +57,10 @@ export const utils: ProjectItem[] = [
   },
   {
     title: 'Snowflake ID Decoder',
-    href: 'https://snowflake-decoder.isavin.dev/',
-    linkLabel: 'snowflake-decoder.isavin.dev',
-    description: 'Decode snowflake ID like a PRO',
+    href: '/utils/snowflake',
+    linkLabel: 'isavin.dev/utils/snowflake',
+    internal: true,
+    description:
+      'Split a Snowflake ID into timestamp, node and counter — with an adjustable bit layout',
   },
 ];

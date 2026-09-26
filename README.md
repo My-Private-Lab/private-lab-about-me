@@ -22,6 +22,7 @@ keeping the original look & feel pixel-for-pixel.
 | `/utils`      | Utils                | `utils.html`    |
 | `/utils/cron` | Cron Expression Tool | —               |
 | `/utils/jwt`  | JWT Decoder          | —               |
+| `/utils/snowflake` | Snowflake ID Decoder | —          |
 
 `/utils/cron` is a self-contained cron helper: it explains an expression in
 plain English, breaks it down field by field, lists the next runs in the
@@ -35,6 +36,13 @@ with local dates and expiry state — and verifies HS256/384/512 signatures via
 the Web Crypto API. The token is deliberately kept out of the URL, since it is
 a credential. Decoding and verification live in `src/lib/jwt.ts`. (Previously
 a separate app at `jwt-decoder.isavin.dev`.)
+
+`/utils/snowflake` splits a Snowflake ID (as produced by
+`diva-lib-snowflake-id-generator`) into timestamp, node id and counter, shows
+the ID in binary coloured by part, and lets you adjust the node/counter bit
+widths. The ID lives in `?id=`; the bit layout and the last five saved IDs are
+kept in `localStorage`. Decoding lives in `src/lib/snowflake.ts`. (Previously a
+separate app at `snowflake-decoder.isavin.dev`.)
 
 Tool pages share one set of building blocks: the `tool-*` classes in
 `src/index.css` (inputs, buttons, chips, headings, callouts, rows, code
@@ -62,8 +70,9 @@ src/
   components/      # shared UI (ProjectCard, BackLink, CopyButton)
   data/            # content for the Projects & Utils lists
   hooks/           # useTypedRole (terminal typing), usePageMeta (title/body class)
-  lib/             # cron.ts (cron parser & scheduler), jwt.ts (JWT decode & HMAC verify)
-  pages/           # Home, Projects, Utils, Cron, Jwt
+  lib/             # cron.ts (cron parser & scheduler), jwt.ts (JWT decode & HMAC verify),
+                   # snowflake.ts (Snowflake ID decode)
+  pages/           # Home, Projects, Utils, Cron, Jwt, Snowflake
   icons.tsx        # inline SVG icons
   index.css        # design tokens + all styling (ported 1:1)
   App.tsx          # routes
