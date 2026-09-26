@@ -1,6 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+// Self-hosted fonts: no third-party DNS/TLS round-trips on mobile networks,
+// only the unicode ranges a page actually uses are downloaded.
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
 import App from './App.tsx';
 import './index.css';
 

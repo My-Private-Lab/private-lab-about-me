@@ -15,6 +15,7 @@ export default function Home() {
         className="avatar"
         width={120}
         height={120}
+        fetchPriority="high"
       />
       <h1>
         <strong>Igor</strong> Savin
