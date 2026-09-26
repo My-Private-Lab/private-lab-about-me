@@ -6,7 +6,7 @@
          phones. Pinch-zoom is deliberately NOT disabled (accessibility); iOS
          focus-zoom is prevented in CSS by keeping form fields at >= 16px. -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="format-detection" content="telephone=no" />
 
     <title>Igor Savin — Software Engineer &amp; Tech Lead</title>
@@ -36,6 +36,22 @@
       content="Software Engineer, Team Lead and Tech Lead. Building software since 2009."
     />
     <meta name="twitter:image" content="https://isavin.dev/avatar.png" />
+
+    <!-- Apply the saved (or OS) theme before first paint — no flash of the
+         wrong theme. Keep in sync with src/hooks/useTheme.ts. -->
+    <script>
+      (function () {
+        var mode = null;
+        try { mode = localStorage.getItem('theme'); } catch (e) {}
+        var dark = mode === 'dark' || mode === 'light'
+          ? mode === 'dark'
+          : !window.matchMedia || window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = dark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.querySelector('meta[name="theme-color"]')
+          .setAttribute('content', dark ? '#0d1117' : '#f6f8fa');
+      })();
+    </script>
 
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

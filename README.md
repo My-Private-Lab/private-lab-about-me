@@ -49,6 +49,14 @@ Tool pages share one set of building blocks: the `tool-*` classes in
 blocks) and components such as `CopyButton` and `BackLink`. New utils should
 reuse them rather than add their own look.
 
+Every page has a theme switch in the top-right corner: system / light / dark.
+The default follows the OS; an explicit choice is kept in `localStorage`
+(`theme`). An inline script in `index.html` applies the theme before first
+paint, and `src/hooks/useTheme.ts` keeps it in sync afterwards. Colours are
+tokens on `:root` in `src/index.css`, overridden under
+`:root[data-theme='light']` — new styles should use the tokens, not raw
+colours.
+
 The old `*.html` URLs redirect to their clean equivalents, so existing links
 keep working.
 
@@ -67,9 +75,10 @@ npm run lint     # type-check only
 ```
 public/            # static assets copied as-is (avatar, favicon, CNAME, 404.html)
 src/
-  components/      # shared UI (ProjectCard, BackLink, CopyButton)
+  components/      # shared UI (ProjectCard, BackLink, CopyButton, ThemeToggle)
   data/            # content for the Projects & Utils lists
-  hooks/           # useTypedRole (terminal typing), usePageMeta (title/body class)
+  hooks/           # useTypedRole (terminal typing), usePageMeta (title/body class),
+                   # useTheme (system / light / dark)
   lib/             # cron.ts (cron parser & scheduler), jwt.ts (JWT decode & HMAC verify),
                    # snowflake.ts (Snowflake ID decode)
   pages/           # Home, Projects, Utils, Cron, Jwt, Snowflake

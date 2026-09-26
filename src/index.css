@@ -12,6 +12,25 @@
 
     --accent: #64ffda;      /* terminal teal */
     --accent-dim: rgba(100, 255, 218, 0.12);
+    --glow: rgba(100, 255, 218, 0.06);      /* radial glow behind the card */
+    --shadow: rgba(0, 0, 0, 0.35);
+
+    --danger: #f85149;
+    --danger-text: #ffa198;
+    --danger-dim: rgba(248, 81, 73, 0.1);
+    --ok: #3fb950;
+    --ok-text: #3fb950;
+    --ok-dim: rgba(63, 185, 80, 0.15);
+    --warn: #d29922;
+    --warn-dim: rgba(210, 153, 34, 0.15);
+    --bad-text: #ff7b72;
+    --bad-dim: rgba(248, 81, 73, 0.15);
+
+    /* Colour-coded parts in the tools (JWT header / payload / signature,
+       Snowflake timestamp / node / counter). */
+    --part-1: #ff7b9c;
+    --part-2: #a5d6ff;
+    --part-3: #d2a8ff;
 
     --font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -21,6 +40,43 @@
     /* Page gutter; the safe-area max() below keeps content clear of notches
        and the home indicator in landscape. */
     --gutter: 24px;
+}
+
+/* Light theme — same layout and accents, tuned for contrast on white
+   (palette from the former snowflake-decoder app). The theme is chosen by
+   <html data-theme>, set before first paint in index.html. */
+:root[data-theme='light'] {
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --surface-2: #eaeef2;
+    --border: rgba(31, 35, 40, 0.12);
+
+    --text: #1f2328;
+    --text-muted: #59636e;
+
+    --accent: #0d9488;
+    --accent-dim: rgba(13, 148, 136, 0.1);
+    --glow: rgba(13, 148, 136, 0.08);
+    --shadow: rgba(31, 35, 40, 0.08);
+
+    --danger: #cf222e;
+    --danger-text: #a40e26;
+    --danger-dim: rgba(207, 34, 46, 0.08);
+    --ok: #1a7f37;
+    --ok-text: #1a7f37;
+    --ok-dim: rgba(26, 127, 55, 0.12);
+    --warn: #9a6700;
+    --warn-dim: rgba(154, 103, 0, 0.12);
+    --bad-text: #cf222e;
+    --bad-dim: rgba(207, 34, 46, 0.1);
+
+    --part-1: #bf3989;
+    --part-2: #0969da;
+    --part-3: #8250df;
+}
+
+html[data-theme='light'] {
+    color-scheme: light;
 }
 
 /* ===========================================================
@@ -34,6 +90,7 @@
 
 html {
     color-scheme: dark;              /* native controls & scrollbars match the theme */
+    background-color: var(--bg);     /* no white flash behind the body on overscroll */
     -webkit-text-size-adjust: 100%;  /* no font inflation on iOS rotation */
     text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent; /* focus/active styles below replace it */
@@ -56,7 +113,7 @@ input {
 
 body {
     background-color: var(--bg);
-    background-image: radial-gradient(circle at 50% 0%, rgba(100, 255, 218, 0.06), transparent 60%);
+    background-image: radial-gradient(circle at 50% 0%, var(--glow), transparent 60%);
     color: var(--text);
     font-family: var(--font-sans);
     line-height: 1.6;
@@ -92,7 +149,7 @@ body {
     max-width: 420px;
     background-color: var(--surface);
     border: 1px solid var(--border);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 8px 40px var(--shadow);
 }
 
 /* Avatar */
@@ -415,7 +472,7 @@ body.home {
 }
 
 .tool-invalid {
-    border-color: #f85149;
+    border-color: var(--danger);
 }
 
 .tool-button {
@@ -571,9 +628,9 @@ body.home {
 
 .tool-error {
     font-size: 0.92rem;
-    color: #ffa198;
-    background-color: rgba(248, 81, 73, 0.1);
-    border-left: 3px solid #f85149;
+    color: var(--danger-text);
+    background-color: var(--danger-dim);
+    border-left: 3px solid var(--danger);
     border-radius: 0 8px 8px 0;
     padding: 12px 14px;
 }
@@ -741,9 +798,9 @@ body.home {
    JWT decoder
    =========================================================== */
 .card-tool {
-    --jwt-header: #ff7b9c;
-    --jwt-payload: #a5d6ff;
-    --jwt-signature: #d2a8ff;
+    --jwt-header: var(--part-1);
+    --jwt-payload: var(--part-2);
+    --jwt-signature: var(--part-3);
 }
 
 .jwt-input {
@@ -779,9 +836,9 @@ body.home {
     padding: 2px 10px;
 }
 
-.jwt-state-valid { color: #3fb950; background-color: rgba(63, 185, 80, 0.15); }
-.jwt-state-expired { color: #ff7b72; background-color: rgba(248, 81, 73, 0.15); }
-.jwt-state-not-yet-valid { color: #d29922; background-color: rgba(210, 153, 34, 0.15); }
+.jwt-state-valid { color: var(--ok-text); background-color: var(--ok-dim); }
+.jwt-state-expired { color: var(--bad-text); background-color: var(--bad-dim); }
+.jwt-state-not-yet-valid { color: var(--warn); background-color: var(--warn-dim); }
 
 /* The encoded token, coloured by part like the section dots below. */
 .jwt-token {
@@ -855,9 +912,9 @@ body.home {
    Snowflake ID decoder
    =========================================================== */
 .card-tool {
-    --sf-timestamp: #a5d6ff;
-    --sf-node: #ff7b9c;
-    --sf-counter: #d2a8ff;
+    --sf-timestamp: var(--part-2);
+    --sf-node: var(--part-1);
+    --sf-counter: var(--part-3);
 }
 
 .sf-input {
@@ -1021,6 +1078,60 @@ body.home {
 }
 
 /* ===========================================================
+   Theme toggle — top-right corner of every page
+   =========================================================== */
+.theme-toggle {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    z-index: 1;
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+}
+
+/* Narrow screens: tool pages start right under the toggle instead of
+   sliding beneath it (the home card is centred, so it has room already). */
+@media (max-width: 720px) {
+    body:not(.home) {
+        padding-top: calc(max(12px, env(safe-area-inset-top)) + 52px);
+    }
+}
+
+.theme-toggle button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.theme-toggle svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.theme-toggle button[aria-checked='true'] {
+    color: var(--accent);
+    background-color: var(--accent-dim);
+}
+
+.theme-toggle button:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+/* ===========================================================
    Hover effects — only on devices with a real pointer.
    On touch screens :hover "sticks" after a tap, leaving cards lifted
    and links underlined until the user taps elsewhere.
@@ -1049,6 +1160,10 @@ body.home {
     .tool-chip:hover {
         color: var(--accent);
         border-color: var(--accent);
+    }
+
+    .theme-toggle button:hover {
+        color: var(--accent);
     }
 
     .sf-step:not(:disabled):hover {
@@ -1115,6 +1230,24 @@ body.home {
         inset: -9px 0;
     }
 
+    /* 44px hit area for each theme button: 36px visible + the pill's padding. */
+    .theme-toggle {
+        padding: 4px;
+        gap: 0;
+    }
+
+    .theme-toggle button {
+        position: relative;
+        width: 36px;
+        height: 36px;
+    }
+
+    .theme-toggle button::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+    }
+
     /* 44px hit area around the compact steppers and icon buttons. */
     .sf-step,
     .sf-icon-button {
@@ -1149,6 +1282,7 @@ body.home {
     .tool-chip:active,
     .sf-step:active,
     .sf-icon-button:active,
+    .theme-toggle button:active,
     .sf-history-id:active {
         opacity: 0.7;
     }
