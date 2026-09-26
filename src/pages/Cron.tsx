@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { BackLink } from '../components/BackLink';
 import { usePageMeta } from '../hooks/usePageMeta';
 import {
   FIELD_DEFS,
@@ -96,7 +97,10 @@ export default function Cron() {
 
   return (
     <main className="card card-projects card-tool">
-      <h1>Cron Expression Tool</h1>
+      <h1>
+        <BackLink to="/utils" label="Back to Utils" />
+        Cron Expression Tool
+      </h1>
       <p className="description">
         Paste a cron string to see what it means and when it runs next, or build one field by
         field. Everything happens in your browser — nothing is sent anywhere.
@@ -222,15 +226,6 @@ export default function Cron() {
         ))}
       </dl>
 
-      <nav className="nav-links" aria-label="Site sections">
-        <Link to="/utils" className="projects-link">
-          &lt; Back to Utils
-        </Link>
-        <span className="nav-sep">/</span>
-        <Link to="/" className="projects-link">
-          Home
-        </Link>
-      </nav>
     </main>
   );
 }

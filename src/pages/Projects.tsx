@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { BackLink } from '../components/BackLink';
 import { ProjectCard } from '../components/ProjectCard';
 import { petProjects } from '../data/projects';
 
@@ -8,7 +8,10 @@ export default function Projects() {
 
   return (
     <main className="card card-projects">
-      <h1>Pet-projects</h1>
+      <h1>
+        <BackLink to="/" label="Back to Home" />
+        Pet-projects
+      </h1>
       <p className="description">
         In my free time, I enjoy working on side projects with my friends to explore new
         technologies and solve interesting problems. Here are a couple of projects I've been
@@ -18,12 +21,6 @@ export default function Projects() {
       {petProjects.map((project) => (
         <ProjectCard key={project.title} {...project} />
       ))}
-
-      <nav className="nav-links" aria-label="Site sections">
-        <Link to="/" className="projects-link">
-          &lt; Back to Home
-        </Link>
-      </nav>
     </main>
   );
 }
