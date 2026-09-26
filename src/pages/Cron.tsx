@@ -11,7 +11,7 @@ import {
   parseCron,
   splitFields,
 } from '../lib/cron';
-import { CopyIcon, CheckIcon } from '../icons';
+import { CopyButton } from '../components/CopyButton';
 
 const DEFAULT_EXPRESSION = '*/5 9-17 * * MON-FRI';
 const NEXT_RUNS_COUNT = 5;
@@ -55,7 +55,6 @@ export default function Cron() {
   const [expression, setExpression] = useState(
     () => searchParams.get('expr') ?? DEFAULT_EXPRESSION,
   );
-  const [copied, setCopied] = useState(false);
 
   const result = useMemo(() => parseCron(expression), [expression]);
 
@@ -74,7 +73,6 @@ export default function Cron() {
 
   function update(next: string) {
     setExpression(next);
-    setCopied(false);
     setSearchParams(next.trim() === '' ? {} : { expr: next.trim() }, { replace: true });
   }
 
@@ -82,15 +80,6 @@ export default function Cron() {
     const next = [...tokens];
     next[index] = value.trim() === '' ? '*' : value.trim();
     update(next.join(' '));
-  }
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(expression.trim());
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
   }
 
   const errorField = result.ok ? undefined : result.error.field;
@@ -106,9 +95,9 @@ export default function Cron() {
         field. Everything happens in your browser — nothing is sent anywhere.
       </p>
 
-      <div className="cron-input-row">
+      <div className="tool-input-row">
         <input
-          className={`cron-input${result.ok ? '' : ' cron-input-invalid'}`}
+          className={`tool-input cron-input${result.ok ? '' : ' tool-invalid'}`}
           value={expression}
           onChange={(event) => update(event.target.value)}
           spellCheck={false}
@@ -120,10 +109,7 @@ export default function Cron() {
           aria-invalid={!result.ok}
           placeholder="* * * * *"
         />
-        <button type="button" className="cron-copy" onClick={copy} aria-label="Copy expression">
-          {copied ? <CheckIcon /> : <CopyIcon />}
-          {copied ? 'Copied' : 'Copy'}
-        </button>
+        <CopyButton text={expression.trim()} label="Copy expression" />
       </div>
 
       <div className="cron-fields">
@@ -131,7 +117,7 @@ export default function Cron() {
           <label className="cron-field" key={def.key}>
             <span className="cron-field-label">{def.label}</span>
             <input
-              className={`cron-field-input${errorField === def.key ? ' cron-input-invalid' : ''}`}
+              className={`cron-field-input${errorField === def.key ? ' tool-invalid' : ''}`}
               value={tokens[index]}
               onChange={(event) => updateField(index, event.target.value)}
               spellCheck={false}
@@ -150,20 +136,20 @@ export default function Cron() {
 
       {result.ok ? (
         <>
-          <p className="cron-summary">{describeCron(result.cron)}</p>
+          <p className="tool-summary">{describeCron(result.cron)}</p>
           {result.cron.macro && (
-            <p className="cron-note">
+            <p className="tool-note">
               <code>{result.cron.macro}</code> expands to <code>{result.cron.expression}</code>
             </p>
           )}
           {result.cron.dayOr && (
-            <p className="cron-note">
+            <p className="tool-note">
               Both day fields are restricted, so cron fires when <em>either</em> of them matches.
             </p>
           )}
 
-          <h2 className="cron-heading">Field by field</h2>
-          <ul className="cron-breakdown">
+          <h2 className="tool-heading">Field by field</h2>
+          <ul className="tool-rows cron-breakdown">
             {FIELD_DEFS.map((def) => {
               const field = result.cron.fields[def.key];
               return (
@@ -176,34 +162,34 @@ export default function Cron() {
             })}
           </ul>
 
-          <h2 className="cron-heading">
-            Next runs <span className="cron-tz">{localTimeZone}</span>
+          <h2 className="tool-heading">
+            Next runs <span className="tool-heading-aside">{localTimeZone}</span>
           </h2>
           {runs.length > 0 ? (
-            <ol className="cron-runs">
+            <ol className="tool-rows cron-runs">
               {runs.map((run) => (
                 <li key={run.toISOString()}>{runFormatter.format(run)}</li>
               ))}
             </ol>
           ) : (
-            <p className="cron-note">
+            <p className="tool-note">
               This expression never fires — check the day-of-month and month combination.
             </p>
           )}
         </>
       ) : (
-        <p className="cron-error" role="alert">
+        <p className="tool-error" role="alert">
           {result.error.message}
         </p>
       )}
 
-      <h2 className="cron-heading">Presets</h2>
-      <div className="cron-presets">
+      <h2 className="tool-heading">Presets</h2>
+      <div className="tool-chips">
         {PRESETS.map((preset) => (
           <button
             type="button"
             key={preset.expression}
-            className="cron-preset"
+            className="tool-chip"
             onClick={() => update(preset.expression)}
           >
             {preset.label}
@@ -211,7 +197,7 @@ export default function Cron() {
         ))}
       </div>
 
-      <h2 className="cron-heading">Syntax</h2>
+      <h2 className="tool-heading">Syntax</h2>
       <dl className="cron-syntax">
         {SYNTAX.map((entry) => (
           <div className="cron-syntax-row" key={entry.symbol}>

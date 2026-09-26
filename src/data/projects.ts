@@ -41,8 +41,9 @@ export const petProjects: ProjectItem[] = [
 export const utils: ProjectItem[] = [
   {
     title: 'JWT Decoder',
-    href: 'https://jwt-decoder.isavin.dev/',
-    linkLabel: 'jwt-decoder.isavin.dev',
+    href: '/utils/jwt',
+    linkLabel: 'isavin.dev/utils/jwt',
+    internal: true,
     description:
       'Decode & verify JSON Web Tokens right in your browser — nothing leaves the page',
   },

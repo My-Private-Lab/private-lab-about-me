@@ -382,24 +382,24 @@ body.home {
 }
 
 /* ===========================================================
-   Cron tool
+   Tools — shared building blocks of the /utils/* pages
+   (inputs, buttons, chips, headings, callouts, rows, code blocks)
    =========================================================== */
 .card-tool {
     max-width: 640px;
 }
 
-.cron-input-row {
+.tool-input-row {
     display: flex;
     gap: 10px;
     margin-bottom: 14px;
 }
 
-.cron-input {
+.tool-input {
     flex: 1;
     min-width: 0;
     font-family: var(--font-mono);
-    font-size: 1.05rem;
-    letter-spacing: 1px;
+    font-size: 0.9rem;
     color: var(--text);
     background-color: var(--surface-2);
     border: 1px solid var(--border);
@@ -408,17 +408,17 @@ body.home {
     transition: border-color 0.25s ease;
 }
 
-.cron-input:focus-visible,
+.tool-input:focus-visible,
 .cron-field-input:focus-visible {
     border-color: var(--accent);
     outline: none;
 }
 
-.cron-input-invalid {
+.tool-invalid {
     border-color: #f85149;
 }
 
-.cron-copy {
+.tool-button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -433,14 +433,88 @@ body.home {
     transition: border-color 0.25s ease;
 }
 
-.cron-copy:focus-visible {
+.tool-button:focus-visible {
     border-color: var(--accent);
     outline: none;
 }
 
-.cron-copy svg {
+.tool-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.tool-button svg {
     width: 14px;
     height: 14px;
+}
+
+/* Compact variant — e.g. "Copy" next to a section heading. */
+.tool-button-sm {
+    font-size: 0.74rem;
+    border-radius: 8px;
+    padding: 4px 10px;
+}
+
+.tool-button-sm svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Section heading with an action (Copy) on the right. */
+.tool-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 26px 0 10px;
+}
+
+.tool-heading-row .tool-heading {
+    margin: 0;
+}
+
+/* Stacked rows — breakdowns, lists of dates, claims. */
+.tool-rows {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tool-rows li {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.tool-rows code {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    overflow-wrap: anywhere;
+}
+
+/* Pre-formatted output — JSON and the like. */
+.tool-code {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* ===========================================================
+   Cron tool
+   =========================================================== */
+.cron-input {
+    font-size: 1.05rem;
+    letter-spacing: 1px;
 }
 
 /* Per-field editors — the "builder" half of the tool */
@@ -485,7 +559,7 @@ body.home {
     text-align: center;
 }
 
-.cron-summary {
+.tool-summary {
     font-size: 1.05rem;
     color: var(--text);
     background-color: var(--accent-dim);
@@ -495,7 +569,7 @@ body.home {
     margin-bottom: 12px;
 }
 
-.cron-error {
+.tool-error {
     font-size: 0.92rem;
     color: #ffa198;
     background-color: rgba(248, 81, 73, 0.1);
@@ -504,18 +578,18 @@ body.home {
     padding: 12px 14px;
 }
 
-.cron-note {
+.tool-note {
     font-size: 0.85rem;
     color: var(--text-muted);
     margin-bottom: 10px;
 }
 
-.cron-note code {
+.tool-note code {
     font-family: var(--font-mono);
     color: var(--accent);
 }
 
-.cron-heading {
+.tool-heading {
     font-size: 0.78rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -524,7 +598,7 @@ body.home {
     margin: 26px 0 10px;
 }
 
-.cron-tz {
+.tool-heading-aside {
     font-family: var(--font-mono);
     font-weight: 400;
     text-transform: none;
@@ -532,31 +606,12 @@ body.home {
     opacity: 0.7;
 }
 
-.cron-breakdown,
-.cron-runs {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
 .cron-breakdown li {
     display: grid;
     grid-template-columns: 64px 110px 1fr;
     align-items: baseline;
     gap: 10px;
-    font-size: 0.85rem;
     color: var(--text-muted);
-    padding: 8px 12px;
-    background-color: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-}
-
-.cron-breakdown code {
-    font-family: var(--font-mono);
-    color: var(--accent);
-    overflow-wrap: anywhere;
 }
 
 .cron-breakdown-label {
@@ -578,10 +633,6 @@ body.home {
     align-items: baseline;
     gap: 10px;
     color: var(--text);
-    padding: 8px 12px;
-    background-color: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
 }
 
 .cron-runs li::before {
@@ -591,13 +642,13 @@ body.home {
     opacity: 0.7;
 }
 
-.cron-presets {
+.tool-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
 
-.cron-preset {
+.tool-chip {
     font-family: var(--font-mono);
     font-size: 0.78rem;
     color: var(--text-muted);
@@ -609,7 +660,7 @@ body.home {
     transition: color 0.25s ease, border-color 0.25s ease;
 }
 
-.cron-preset:focus-visible {
+.tool-chip:focus-visible {
     color: var(--accent);
     border-color: var(--accent);
     outline: none;
@@ -657,7 +708,7 @@ body.home {
         letter-spacing: 0;
     }
 
-    .cron-copy {
+    .tool-button {
         padding: 0 10px;
     }
 
@@ -667,7 +718,7 @@ body.home {
         gap: 10px;
     }
 
-    .cron-summary {
+    .tool-summary {
         font-size: 0.98rem;
     }
 
@@ -687,6 +738,120 @@ body.home {
 }
 
 /* ===========================================================
+   JWT decoder
+   =========================================================== */
+.card-tool {
+    --jwt-header: #ff7b9c;
+    --jwt-payload: #a5d6ff;
+    --jwt-signature: #d2a8ff;
+}
+
+.jwt-input {
+    display: block;
+    width: 100%;
+    min-height: 7.5em;
+    resize: vertical;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    margin-bottom: 12px;
+}
+
+.jwt-actions {
+    margin-bottom: 20px;
+}
+
+.jwt-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+}
+
+.jwt-badge {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    background-color: var(--surface-2);
+    border-radius: 999px;
+    padding: 2px 10px;
+}
+
+.jwt-state-valid { color: #3fb950; background-color: rgba(63, 185, 80, 0.15); }
+.jwt-state-expired { color: #ff7b72; background-color: rgba(248, 81, 73, 0.15); }
+.jwt-state-not-yet-valid { color: #d29922; background-color: rgba(210, 153, 34, 0.15); }
+
+/* The encoded token, coloured by part like the section dots below. */
+.jwt-token {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
+
+.jwt-part-header { color: var(--jwt-header); }
+.jwt-part-payload { color: var(--jwt-payload); }
+.jwt-part-signature { color: var(--jwt-signature); }
+
+.jwt-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: 1px;
+}
+
+.jwt-dot-header { background-color: var(--jwt-header); }
+.jwt-dot-payload { background-color: var(--jwt-payload); }
+.jwt-dot-signature { background-color: var(--jwt-signature); }
+
+.jwt-signature {
+    color: var(--jwt-signature);
+}
+
+.jwt-claims li {
+    display: grid;
+    grid-template-columns: 44px 120px 1fr;
+    align-items: baseline;
+    gap: 10px;
+    color: var(--text-muted);
+}
+
+.jwt-claim-value {
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.jwt-claim-relative {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.jwt-verify {
+    margin: 12px 0;
+}
+
+.jwt-verify .tool-button {
+    justify-content: center;
+}
+
+@media (max-width: 480px) {
+    .jwt-claims li {
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+    }
+
+    .jwt-claim-label {
+        display: none;
+    }
+}
+
+/* ===========================================================
    Hover effects — only on devices with a real pointer.
    On touch screens :hover "sticks" after a tap, leaving cards lifted
    and links underlined until the user taps elsewhere.
@@ -699,7 +864,7 @@ body.home {
 
     .projects-link:hover,
     .project-link:hover,
-    .cron-copy:hover {
+    .tool-button:hover {
         border-color: var(--accent);
     }
 
@@ -712,7 +877,7 @@ body.home {
         transform: translateY(-2px);
     }
 
-    .cron-preset:hover {
+    .tool-chip:hover {
         color: var(--accent);
         border-color: var(--accent);
     }
@@ -726,7 +891,7 @@ body.home {
     input,
     select,
     textarea,
-    .cron-input,
+    .tool-input,
     .cron-field-input {
         font-size: 16px;
     }
@@ -751,12 +916,25 @@ body.home {
         margin: -8px 0;
     }
 
-    .cron-preset {
+    .tool-chip {
         padding: 10px 14px;
     }
 
-    .cron-copy {
+    .tool-button {
         min-width: 44px;
+    }
+
+    /* Keep the compact look but give it a 44px tall hit area: an invisible
+       pseudo-element extends the tappable box past the visible pill. */
+    .tool-button-sm {
+        position: relative;
+        padding: 4px 12px;
+    }
+
+    .tool-button-sm::after {
+        content: '';
+        position: absolute;
+        inset: -9px 0;
     }
 
     .back-link {
@@ -770,8 +948,8 @@ body.home {
     .back-link:active,
     .projects-link:active,
     .project-link:active,
-    .cron-copy:active,
-    .cron-preset:active {
+    .tool-button:active,
+    .tool-chip:active {
         opacity: 0.7;
     }
 }
