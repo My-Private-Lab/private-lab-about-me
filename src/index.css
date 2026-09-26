@@ -41,6 +41,16 @@ body {
     padding: 24px;
 }
 
+/* React mount point is the flex item of <body>. Stretch it to full width so
+   the card's `width: 100%` resolves against the viewport, not against its own
+   content — otherwise the card shrink-wraps and resizes as the role types out
+   or web fonts swap in. */
+#root {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
 /* ===========================================================
    Card
    =========================================================== */
