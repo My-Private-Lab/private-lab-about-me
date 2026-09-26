@@ -6,13 +6,16 @@ import { BrowserRouter } from 'react-router-dom';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import App from './App.tsx';
+import { LangProvider } from './i18n';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <LangProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </LangProvider>
   </StrictMode>,
 );
 

@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { BackLink } from '../components/BackLink';
 import { CopyButton } from '../components/CopyButton';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { useLang, type Lang } from '../i18n';
+import type { Messages } from '../i18n/en';
 import {
-  CLAIM_LABELS,
   JwtError,
+  REGISTERED_CLAIMS,
   TIME_CLAIMS,
   decodeJwt,
   expiryState,
@@ -22,30 +24,45 @@ const SAMPLE_TOKEN =
   'eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.' +
   'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 
-const EXPIRY_LABEL: Record<ExpiryState, string> = {
-  valid: 'Not expired',
-  expired: 'Expired',
-  'not-yet-valid': 'Not yet valid',
-  unknown: 'No expiry',
-};
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  weekday: 'short',
-  year: 'numeric',
-  month: 'short',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-  hour12: false,
-});
+function dateFormatter(lang: Lang) {
+  return new Intl.DateTimeFormat(lang, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}
 
 const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-type DecodeResult = { ok: true; jwt: DecodedJwt } | { ok: false; error: string } | null;
+type DecodeResult = { ok: true; jwt: DecodedJwt } | { ok: false; error: unknown } | null;
+
+type JwtText = Messages['jwt'];
+
+function describeError(error: unknown, t: JwtText): string {
+  if (!(error instanceof JwtError)) return t.errors.unknown;
+  const part = error.detail.part ? t.parts[error.detail.part] : '';
+  switch (error.code) {
+    case 'empty':
+      return t.errors.empty;
+    case 'parts':
+      return t.errors.parts(error.detail.count ?? 0);
+    case 'base64':
+      return t.errors.base64(part);
+    case 'notObject':
+      return t.errors.notObject(part);
+    case 'notJson':
+      return t.errors.notJson(part);
+  }
+}
 
 export default function Jwt() {
-  usePageMeta({ title: 'JWT Decoder — Igor Savin' });
+  const { t } = useLang();
+  usePageMeta({ title: t.pageTitle(t.jwt.title) });
 
   // Deliberately not mirrored into the URL (unlike the cron tool): tokens are
   // credentials and must not end up in history, logs or shared links.
@@ -56,23 +73,17 @@ export default function Jwt() {
     try {
       return { ok: true, jwt: decodeJwt(token) };
     } catch (error) {
-      return {
-        ok: false,
-        error: error instanceof JwtError ? error.message : 'Failed to decode the token',
-      };
+      return { ok: false, error };
     }
   }, [token]);
 
   return (
     <main className="card card-projects card-tool">
       <h1>
-        <BackLink to="/utils" label="Back to Utils" />
-        JWT Decoder
+        <BackLink to="/utils" label={t.backToUtils} />
+        {t.jwt.title}
       </h1>
-      <p className="description">
-        Paste a JSON Web Token to see its header, payload and claims, and verify an HMAC
-        signature. Everything happens in your browser — nothing is sent anywhere.
-      </p>
+      <p className="description">{t.jwt.description}</p>
 
       <textarea
         className={`tool-input jwt-input${result?.ok === false ? ' tool-invalid' : ''}`}
@@ -82,7 +93,7 @@ export default function Jwt() {
         autoCapitalize="off"
         autoCorrect="off"
         autoComplete="off"
-        aria-label="Encoded token"
+        aria-label={t.jwt.inputLabel}
         aria-invalid={result?.ok === false}
         placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
         rows={5}
@@ -90,18 +101,18 @@ export default function Jwt() {
 
       <div className="tool-chips jwt-actions">
         <button type="button" className="tool-chip" onClick={() => setToken(SAMPLE_TOKEN)}>
-          Sample token
+          {t.jwt.sampleToken}
         </button>
         {token !== '' && (
           <button type="button" className="tool-chip" onClick={() => setToken('')}>
-            Clear
+            {t.clear}
           </button>
         )}
       </div>
 
       {result?.ok === false && (
         <p className="tool-error" role="alert">
-          {result.error}
+          {describeError(result.error, t.jwt)}
         </p>
       )}
 
@@ -111,6 +122,7 @@ export default function Jwt() {
 }
 
 function Decoded({ jwt, token }: { jwt: DecodedJwt; token: string }) {
+  const { lang, t } = useLang();
   const state = expiryState(jwt.payload);
   const alg = typeof jwt.header.alg === 'string' ? jwt.header.alg : 'unknown';
   const header = JSON.stringify(jwt.header, null, 2);
@@ -120,8 +132,8 @@ function Decoded({ jwt, token }: { jwt: DecodedJwt; token: string }) {
     <>
       <p className="tool-summary jwt-summary">
         <span className="jwt-badge">{alg}</span>
-        <span className={`jwt-badge jwt-state-${state}`}>{EXPIRY_LABEL[state]}</span>
-        {expirySentence(jwt.payload, state)}
+        <span className={`jwt-badge jwt-state-${state}`}>{t.jwt.expiry[state]}</span>
+        {expirySentence(jwt.payload, state, lang, t.jwt)}
       </p>
 
       <p className="jwt-token" aria-hidden="true">
@@ -130,74 +142,70 @@ function Decoded({ jwt, token }: { jwt: DecodedJwt; token: string }) {
         <span className="jwt-part-signature">{jwt.raw.signature}</span>
       </p>
 
-      <SectionHeading title="Header" part="header" copy={header} />
+      <SectionHeading part="header" copy={header} />
       <pre className="tool-code">{header}</pre>
 
-      <SectionHeading title="Payload" part="payload" copy={payload} />
+      <SectionHeading part="payload" copy={payload} />
       <pre className="tool-code">{payload}</pre>
 
       <Claims payload={jwt.payload} />
 
-      <SectionHeading title="Signature" part="signature" copy={jwt.raw.signature} />
-      <pre className="tool-code jwt-signature">{jwt.raw.signature || '(empty)'}</pre>
+      <SectionHeading part="signature" copy={jwt.raw.signature} />
+      <pre className="tool-code jwt-signature">{jwt.raw.signature || t.jwt.empty}</pre>
       <Verify token={token} alg={alg} />
     </>
   );
 }
 
-function SectionHeading({
-  title,
-  part,
-  copy,
-}: {
-  title: string;
-  part: 'header' | 'payload' | 'signature';
-  copy: string;
-}) {
+function SectionHeading({ part, copy }: { part: 'header' | 'payload' | 'signature'; copy: string }) {
+  const { t } = useLang();
+  const title = t.jwt.parts[part];
   return (
     <div className="tool-heading-row">
       <h2 className="tool-heading">
         <span className={`jwt-dot jwt-dot-${part}`} aria-hidden="true" />
         {title}
       </h2>
-      <CopyButton text={copy} label={`Copy ${title.toLowerCase()}`} className="tool-button-sm" />
+      <CopyButton text={copy} label={t.jwt.copyPart(title)} className="tool-button-sm" />
     </div>
   );
 }
 
 /** One line under the badges: when the token expires / expired / becomes valid. */
-function expirySentence(payload: Record<string, unknown>, state: ExpiryState): string {
-  const exp = formatTimeClaim('exp', payload.exp);
-  const nbf = formatTimeClaim('nbf', payload.nbf);
-  if (state === 'not-yet-valid' && nbf) return `Becomes valid ${nbf.relative}`;
-  if (state === 'expired' && exp) return `Expired ${exp.relative}`;
-  if (state === 'valid' && exp) return `Expires ${exp.relative}`;
-  return 'The token has no exp claim';
+function expirySentence(payload: Record<string, unknown>, state: ExpiryState, lang: Lang, t: JwtText): string {
+  const exp = formatTimeClaim('exp', payload.exp, lang);
+  const nbf = formatTimeClaim('nbf', payload.nbf, lang);
+  if (state === 'not-yet-valid' && nbf) return t.becomesValid(nbf.relative);
+  if (state === 'expired' && exp) return t.expiredWhen(exp.relative);
+  if (state === 'valid' && exp) return t.expires(exp.relative);
+  return t.noExp;
 }
 
 function Claims({ payload }: { payload: Record<string, unknown> }) {
-  const claims = Object.keys(CLAIM_LABELS).filter((claim) => claim in payload);
+  const { lang, t } = useLang();
+  const formatDate = useMemo(() => dateFormatter(lang), [lang]);
+  const claims = REGISTERED_CLAIMS.filter((claim) => claim in payload);
   if (claims.length === 0) return null;
 
   return (
     <>
       <h2 className="tool-heading">
-        Registered claims <span className="tool-heading-aside">{localTimeZone}</span>
+        {t.jwt.registeredClaims} <span className="tool-heading-aside">{localTimeZone}</span>
       </h2>
       <ul className="tool-rows jwt-claims">
         {claims.map((claim) => {
           const value = payload[claim];
           const time = (TIME_CLAIMS as readonly string[]).includes(claim)
-            ? formatTimeClaim(claim as TimeClaim, value)
+            ? formatTimeClaim(claim as TimeClaim, value, lang)
             : null;
           return (
             <li key={claim}>
               <code>{claim}</code>
-              <span className="jwt-claim-label">{CLAIM_LABELS[claim]}</span>
+              <span className="jwt-claim-label">{t.jwt.claims[claim]}</span>
               <span className="jwt-claim-value">
                 {time ? (
                   <>
-                    {dateFormatter.format(time.date)}
+                    {formatDate.format(time.date)}
                     <span className="jwt-claim-relative">{time.relative}</span>
                   </>
                 ) : typeof value === 'string' ? (
@@ -215,6 +223,7 @@ function Claims({ payload }: { payload: Record<string, unknown> }) {
 }
 
 function Verify({ token, alg }: { token: string; alg: string }) {
+  const { t } = useLang();
   const [secret, setSecret] = useState('');
   // Remember what was verified so a stale result never shows for a new token or secret.
   const [checked, setChecked] = useState<{ token: string; secret: string; result: VerifyResult }>();
@@ -225,9 +234,9 @@ function Verify({ token, alg }: { token: string; alg: string }) {
   if (!isHmacAlg(alg)) {
     return (
       <p className="tool-note">
-        Verifying <code>{alg}</code> needs a public key and isn’t supported yet — only HMAC
-        signatures (<code>HS256</code>, <code>HS384</code>, <code>HS512</code>) can be checked
-        here.
+        {t.jwt.unsupportedAlg.before} <code>{alg}</code> {t.jwt.unsupportedAlg.middle} (
+        <code>HS256</code>, <code>HS384</code>, <code>HS512</code>)
+        {t.jwt.unsupportedAlg.after}
       </p>
     );
   }
@@ -259,23 +268,28 @@ function Verify({ token, alg }: { token: string; alg: string }) {
           autoCorrect="off"
           autoComplete="off"
           enterKeyHint="go"
-          aria-label="HMAC secret"
-          placeholder={`${alg} secret`}
+          aria-label={t.jwt.secretLabel}
+          placeholder={t.jwt.secretPlaceholder(alg)}
         />
         <button type="submit" className="tool-button" disabled={secret === '' || busy}>
-          Verify
+          {t.jwt.verify}
         </button>
       </form>
 
-      {result?.status === 'valid' && <p className="tool-summary">Signature verified ✓</p>}
+      {result?.status === 'valid' && <p className="tool-summary">{t.jwt.verified}</p>}
       {result?.status === 'invalid' && (
         <p className="tool-error" role="alert">
-          Signature doesn’t match this secret
+          {t.jwt.mismatch}
+        </p>
+      )}
+      {result?.status === 'malformed' && (
+        <p className="tool-error" role="alert">
+          {t.jwt.malformed}
         </p>
       )}
       {result?.status === 'error' && (
         <p className="tool-error" role="alert">
-          {result.message}
+          {result.message ?? t.jwt.verifyFailed}
         </p>
       )}
     </>

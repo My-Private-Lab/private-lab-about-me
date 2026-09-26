@@ -1,18 +1,16 @@
 import { Link } from 'react-router-dom';
 import type { ProjectItem } from '../data/projects';
+import { useLang } from '../i18n';
 import { ArrowRightIcon, ExternalLinkIcon } from '../icons';
 
-export function ProjectCard({
-  title,
-  logo,
-  href,
-  linkLabel,
-  description,
-  internal,
-}: ProjectItem) {
+export function ProjectCard({ id, title: brand, logo, href, linkLabel, internal }: ProjectItem) {
+  const { t } = useLang();
+  const texts = t.data[id];
+  const title = 'title' in texts ? texts.title : (brand ?? id);
+
   return (
     <article className="project">
-      {logo && <img className="project-logo" src={logo} alt={`${title} logo`} loading="lazy" />}
+      {logo && <img className="project-logo" src={logo} alt={t.logoAlt(title)} loading="lazy" />}
 
       <div className="project-body">
         <h2>{title}</h2>
@@ -29,7 +27,7 @@ export function ProjectCard({
           </a>
         )}
 
-        <p>{description}</p>
+        <p>{texts.description}</p>
       </div>
     </article>
   );

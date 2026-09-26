@@ -57,6 +57,16 @@ tokens on `:root` in `src/index.css`, overridden under
 `:root[data-theme='light']` — new styles should use the tokens, not raw
 colours.
 
+Next to it is a language switch: English / Russian. The default follows the
+browser (the first of `navigator.languages` that is `en` or `ru`, else English);
+an explicit choice is kept in `localStorage` (`lang`). UI strings live in
+`src/i18n/en.ts` and `src/i18n/ru.ts` (same shape, enforced by the `Messages`
+type); components read them with `useLang()`. Established tech terms (JWT, cron,
+Snowflake ID, payload, claims…) and the roles in the home-page ticker stay in
+English in both languages. Cron descriptions in Russian live in
+`src/lib/cron-ru.ts`; the libs return error codes rather than English text, so
+each language words them itself.
+
 The old `*.html` URLs redirect to their clean equivalents, so existing links
 keep working.
 
@@ -75,11 +85,12 @@ npm run lint     # type-check only
 ```
 public/            # static assets copied as-is (avatar, favicon, CNAME, 404.html)
 src/
-  components/      # shared UI (ProjectCard, BackLink, CopyButton, ThemeToggle)
+  components/      # shared UI (ProjectCard, BackLink, CopyButton, ThemeToggle, LangToggle)
   data/            # content for the Projects & Utils lists
+  i18n/            # useLang (en / ru), UI strings per language
   hooks/           # useTypedRole (terminal typing), usePageMeta (title/body class),
                    # useTheme (system / light / dark)
-  lib/             # cron.ts (cron parser & scheduler), jwt.ts (JWT decode & HMAC verify),
+  lib/             # cron.ts (cron parser & scheduler), cron-ru.ts (Russian wording), jwt.ts (JWT decode & HMAC verify),
                    # snowflake.ts (Snowflake ID decode)
   pages/           # Home, Projects, Utils, Cron, Jwt, Snowflake
   icons.tsx        # inline SVG icons

@@ -8,7 +8,18 @@ export interface DecodedJwt {
   raw: { header: string; payload: string; signature: string };
 }
 
-export class JwtError extends Error {}
+/** Why a token couldn't be decoded; the UI words it in the current language. */
+export type JwtErrorCode = 'empty' | 'parts' | 'base64' | 'notObject' | 'notJson';
+
+export class JwtError extends Error {
+  constructor(
+    readonly code: JwtErrorCode,
+    /** Which segment failed, or how many parts the token had (for `parts`). */
+    readonly detail: { part?: 'header' | 'payload'; count?: number } = {},
+  ) {
+    super(code);
+  }
+}
 
 /** Decode a base64url string into UTF-8 text. */
 export function base64UrlDecode(input: string): string {
@@ -20,43 +31,45 @@ export function base64UrlDecode(input: string): string {
   try {
     binary = atob(s);
   } catch {
-    throw new JwtError('Segment is not valid base64url');
+    throw new JwtError('base64');
   }
 
   const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
   return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
 }
 
-function parseSegment(segment: string, label: string): Record<string, unknown> {
-  const text = base64UrlDecode(segment);
+function parseSegment(segment: string, part: 'header' | 'payload'): Record<string, unknown> {
+  let text: string;
+  try {
+    text = base64UrlDecode(segment);
+  } catch (e) {
+    if (e instanceof JwtError) throw new JwtError(e.code, { part });
+    throw e;
+  }
   try {
     const json = JSON.parse(text);
     if (json === null || typeof json !== 'object' || Array.isArray(json)) {
-      throw new JwtError(`${label} is not a JSON object`);
+      throw new JwtError('notObject', { part });
     }
     return json as Record<string, unknown>;
   } catch (e) {
     if (e instanceof JwtError) throw e;
-    throw new JwtError(`${label} is not valid JSON`);
+    throw new JwtError('notJson', { part });
   }
 }
 
 /** Decode a compact JWS (`header.payload.signature`). */
 export function decodeJwt(token: string): DecodedJwt {
   const trimmed = token.trim();
-  if (!trimmed) throw new JwtError('Paste a token to decode');
+  if (!trimmed) throw new JwtError('empty');
 
   const parts = trimmed.split('.');
-  if (parts.length !== 3) {
-    throw new JwtError(
-      `A JWT has 3 dot-separated parts, this one has ${parts.length}`,
-    );
-  }
+  if (parts.length !== 3) throw new JwtError('parts', { count: parts.length });
 
   const [h, p, signature] = parts;
   return {
-    header: parseSegment(h, 'Header'),
-    payload: parseSegment(p, 'Payload'),
+    header: parseSegment(h, 'header'),
+    payload: parseSegment(p, 'payload'),
     signature,
     raw: { header: h, payload: p, signature },
   };
@@ -66,15 +79,9 @@ export function decodeJwt(token: string): DecodedJwt {
 export const TIME_CLAIMS = ['exp', 'iat', 'nbf'] as const;
 export type TimeClaim = (typeof TIME_CLAIMS)[number];
 
-export const CLAIM_LABELS: Record<string, string> = {
-  iss: 'Issuer',
-  sub: 'Subject',
-  aud: 'Audience',
-  exp: 'Expiration time',
-  nbf: 'Not before',
-  iat: 'Issued at',
-  jti: 'JWT ID',
-};
+/** Registered claims shown in the claims table, in display order. */
+export const REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti'] as const;
+export type RegisteredClaim = (typeof REGISTERED_CLAIMS)[number];
 
 export interface TimeClaimInfo {
   claim: TimeClaim;
@@ -83,19 +90,19 @@ export interface TimeClaimInfo {
   relative: string;
 }
 
-export function formatTimeClaim(claim: TimeClaim, value: unknown): TimeClaimInfo | null {
+export function formatTimeClaim(claim: TimeClaim, value: unknown, locale?: string): TimeClaimInfo | null {
   if (typeof value !== 'number') return null;
   const date = new Date(value * 1000);
   return {
     claim,
     date,
     iso: date.toISOString(),
-    relative: relativeTime(date),
+    relative: relativeTime(date, locale),
   };
 }
 
-/** Human-friendly "in 5 minutes" / "3 days ago". */
-export function relativeTime(date: Date, now: Date = new Date()): string {
+/** Human-friendly "in 5 minutes" / "3 days ago", in the given locale. */
+export function relativeTime(date: Date, locale?: string, now: Date = new Date()): string {
   const diffMs = date.getTime() - now.getTime();
   const abs = Math.abs(diffMs);
   const units: [Intl.RelativeTimeFormatUnit, number][] = [
@@ -105,7 +112,7 @@ export function relativeTime(date: Date, now: Date = new Date()): string {
     ['minute', 1000 * 60],
     ['second', 1000],
   ];
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
   for (const [unit, ms] of units) {
     if (abs >= ms || unit === 'second') {
       return rtf.format(Math.round(diffMs / ms), unit);
@@ -144,10 +151,12 @@ function base64UrlEncode(bytes: ArrayBuffer): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+/** `malformed`: not a 3-part token or not an HMAC alg; `error`: Web Crypto failed (message from the browser). */
 export type VerifyResult =
   | { status: 'valid' }
   | { status: 'invalid' }
-  | { status: 'error'; message: string };
+  | { status: 'malformed' }
+  | { status: 'error'; message?: string };
 
 /** Verify an HS256/384/512 signature against a shared secret. */
 export async function verifyHmac(
@@ -155,13 +164,8 @@ export async function verifyHmac(
   secret: string,
   alg: string,
 ): Promise<VerifyResult> {
-  if (!isHmacAlg(alg)) {
-    return { status: 'error', message: `${alg} is not an HMAC algorithm` };
-  }
   const parts = token.trim().split('.');
-  if (parts.length !== 3) {
-    return { status: 'error', message: 'Token is malformed' };
-  }
+  if (!isHmacAlg(alg) || parts.length !== 3) return { status: 'malformed' };
   const [header, payload, signature] = parts;
   const signingInput = `${header}.${payload}`;
 
@@ -179,6 +183,6 @@ export async function verifyHmac(
       ? { status: 'valid' }
       : { status: 'invalid' };
   } catch (e) {
-    return { status: 'error', message: e instanceof Error ? e.message : 'Verification failed' };
+    return { status: 'error', message: e instanceof Error ? e.message : undefined };
   }
 }

@@ -57,21 +57,17 @@ export function maxValue(bits: number): bigint {
   return (1n << BigInt(Math.max(0, bits))) - 1n;
 }
 
-/** How long a timestamp of `bits` bits (in seconds) lasts before it wraps, e.g. "~68 years". */
-export function timestampRange(bits: number): string {
+/** How long a timestamp of `bits` bits (in seconds) lasts before it wraps, e.g. 68 years. */
+export function timestampRange(bits: number): { count: number; unit: 'year' | 'day' | 'hour' | 'minute' | 'second' } {
   const seconds = 2 ** Math.max(0, bits);
-  const units: [number, string][] = [
+  const units: [number, 'year' | 'day' | 'hour' | 'minute'][] = [
     [365.25 * 24 * 3600, 'year'],
     [24 * 3600, 'day'],
     [3600, 'hour'],
     [60, 'minute'],
   ];
   for (const [size, unit] of units) {
-    if (seconds >= size) return `~${plural(Math.round(seconds / size), unit)}`;
+    if (seconds >= size) return { count: Math.round(seconds / size), unit };
   }
-  return `~${plural(seconds, 'second')}`;
-}
-
-function plural(count: number, unit: string): string {
-  return `${count.toLocaleString('en-US')} ${unit}${count === 1 ? '' : 's'}`;
+  return { count: seconds, unit: 'second' };
 }

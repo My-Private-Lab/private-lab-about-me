@@ -1078,13 +1078,18 @@ body.home {
 }
 
 /* ===========================================================
-   Theme toggle — top-right corner of every page
+   Language & theme toggles — top-right corner of every page
    =========================================================== */
-.theme-toggle {
+.top-controls {
     position: absolute;
     top: max(12px, env(safe-area-inset-top));
     right: max(12px, env(safe-area-inset-right));
     z-index: 1;
+    display: flex;
+    gap: 8px;
+}
+
+.toggle {
     display: inline-flex;
     gap: 2px;
     padding: 3px;
@@ -1101,7 +1106,7 @@ body.home {
     }
 }
 
-.theme-toggle button {
+.toggle button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1115,18 +1120,29 @@ body.home {
     transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
 }
 
-.theme-toggle svg {
+.toggle svg {
     width: 16px;
     height: 16px;
     display: block;
 }
 
-.theme-toggle button[aria-checked='true'] {
+.toggle button[aria-checked='true'] {
     color: var(--accent);
     background-color: var(--accent-dim);
 }
 
-.theme-toggle button:focus-visible {
+/* Language codes instead of icons: same pill, text sized to the icons. */
+.lang-toggle button {
+    width: auto;
+    min-width: 32px;
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.toggle button:focus-visible {
     border-color: var(--accent);
     outline: none;
 }
@@ -1162,7 +1178,7 @@ body.home {
         border-color: var(--accent);
     }
 
-    .theme-toggle button:hover {
+    .toggle button:hover {
         color: var(--accent);
     }
 
@@ -1230,19 +1246,24 @@ body.home {
         inset: -9px 0;
     }
 
-    /* 44px hit area for each theme button: 36px visible + the pill's padding. */
-    .theme-toggle {
+    /* 44px hit area for each toggle button: 36px visible + the pill's padding. */
+    .toggle {
         padding: 4px;
         gap: 0;
     }
 
-    .theme-toggle button {
+    .toggle button {
         position: relative;
         width: 36px;
         height: 36px;
     }
 
-    .theme-toggle button::after {
+    .lang-toggle button {
+        width: auto;
+        min-width: 36px;
+    }
+
+    .toggle button::after {
         content: '';
         position: absolute;
         inset: -4px;
@@ -1282,7 +1303,7 @@ body.home {
     .tool-chip:active,
     .sf-step:active,
     .sf-icon-button:active,
-    .theme-toggle button:active,
+    .toggle button:active,
     .sf-history-id:active {
         opacity: 0.7;
     }

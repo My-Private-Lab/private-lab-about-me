@@ -5,51 +5,57 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import {
   FIELD_DEFS,
   describeCron,
+  describeCronError,
   describeField,
   expandMacro,
   nextRuns,
   parseCron,
   splitFields,
 } from '../lib/cron';
+import { describeCronErrorRu, describeCronRu, describeFieldRu } from '../lib/cron-ru';
 import { CopyButton } from '../components/CopyButton';
+import { useLang, type Lang } from '../i18n';
+import type { Messages } from '../i18n/en';
 
 const DEFAULT_EXPRESSION = '*/5 9-17 * * MON-FRI';
 const NEXT_RUNS_COUNT = 5;
 
-const PRESETS: { label: string; expression: string }[] = [
-  { label: 'Every minute', expression: '* * * * *' },
-  { label: 'Every 5 minutes', expression: '*/5 * * * *' },
-  { label: 'Hourly', expression: '0 * * * *' },
-  { label: 'Daily at midnight', expression: '0 0 * * *' },
-  { label: 'Weekdays at 09:00', expression: '0 9 * * MON-FRI' },
-  { label: 'Every Monday', expression: '0 0 * * MON' },
-  { label: '1st of the month', expression: '0 0 1 * *' },
-  { label: 'Every quarter', expression: '0 0 1 */3 *' },
+const PRESETS: { key: keyof Messages['cron']['presets']; expression: string }[] = [
+  { key: 'everyMinute', expression: '* * * * *' },
+  { key: 'every5Minutes', expression: '*/5 * * * *' },
+  { key: 'hourly', expression: '0 * * * *' },
+  { key: 'dailyMidnight', expression: '0 0 * * *' },
+  { key: 'weekdays9', expression: '0 9 * * MON-FRI' },
+  { key: 'everyMonday', expression: '0 0 * * MON' },
+  { key: 'firstOfMonth', expression: '0 0 1 * *' },
+  { key: 'everyQuarter', expression: '0 0 1 */3 *' },
 ];
 
-const SYNTAX: { symbol: string; meaning: string; example: string }[] = [
-  { symbol: '*', meaning: 'any value', example: '* * * * * → every minute' },
-  { symbol: ',', meaning: 'list of values', example: '0 9,18 * * * → at 09:00 and 18:00' },
-  { symbol: '-', meaning: 'range of values', example: '0 9-17 * * * → hourly, 09:00–17:00' },
-  { symbol: '/', meaning: 'step', example: '*/15 * * * * → every 15 minutes' },
-  { symbol: 'names', meaning: 'JAN–DEC, SUN–SAT', example: '0 0 * * SUN → every Sunday' },
-  { symbol: '@macros', meaning: '@hourly, @daily, @weekly, @monthly, @yearly', example: '@daily → 0 0 * * *' },
-];
+/** Descriptions and error messages in the page language. */
+const CRON_TEXT = {
+  en: { describeCron, describeField, describeError: describeCronError },
+  ru: { describeCron: describeCronRu, describeField: describeFieldRu, describeError: describeCronErrorRu },
+} satisfies Record<Lang, unknown>;
 
-const runFormatter = new Intl.DateTimeFormat(undefined, {
-  weekday: 'short',
-  year: 'numeric',
-  month: 'short',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-});
+function runFormatter(lang: Lang) {
+  return new Intl.DateTimeFormat(lang, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
 
 const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export default function Cron() {
-  usePageMeta({ title: 'Cron Expression Tool — Igor Savin' });
+  const { lang, t } = useLang();
+  usePageMeta({ title: t.pageTitle(t.cron.title) });
+  const text = CRON_TEXT[lang];
+  const formatRun = useMemo(() => runFormatter(lang), [lang]);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [expression, setExpression] = useState(
@@ -87,13 +93,10 @@ export default function Cron() {
   return (
     <main className="card card-projects card-tool">
       <h1>
-        <BackLink to="/utils" label="Back to Utils" />
-        Cron Expression Tool
+        <BackLink to="/utils" label={t.backToUtils} />
+        {t.cron.title}
       </h1>
-      <p className="description">
-        Paste a cron string to see what it means and when it runs next, or build one field by
-        field. Everything happens in your browser — nothing is sent anywhere.
-      </p>
+      <p className="description">{t.cron.description}</p>
 
       <div className="tool-input-row">
         <input
@@ -105,17 +108,17 @@ export default function Cron() {
           autoCorrect="off"
           autoComplete="off"
           enterKeyHint="done"
-          aria-label="Cron expression"
+          aria-label={t.cron.inputLabel}
           aria-invalid={!result.ok}
           placeholder="* * * * *"
         />
-        <CopyButton text={expression.trim()} label="Copy expression" />
+        <CopyButton text={expression.trim()} label={t.cron.copyExpression} />
       </div>
 
       <div className="cron-fields">
         {FIELD_DEFS.map((def, index) => (
           <label className="cron-field" key={def.key}>
-            <span className="cron-field-label">{def.label}</span>
+            <span className="cron-field-label">{t.cron.fields[def.key]}</span>
             <input
               className={`cron-field-input${errorField === def.key ? ' tool-invalid' : ''}`}
               value={tokens[index]}
@@ -125,7 +128,7 @@ export default function Cron() {
               autoCorrect="off"
               autoComplete="off"
               enterKeyHint="done"
-              aria-label={def.label}
+              aria-label={t.cron.fields[def.key]}
             />
             <span className="cron-field-hint">
               {def.min}-{def.max}
@@ -136,54 +139,52 @@ export default function Cron() {
 
       {result.ok ? (
         <>
-          <p className="tool-summary">{describeCron(result.cron)}</p>
+          <p className="tool-summary">{text.describeCron(result.cron)}</p>
           {result.cron.macro && (
             <p className="tool-note">
-              <code>{result.cron.macro}</code> expands to <code>{result.cron.expression}</code>
+              <code>{result.cron.macro}</code> {t.cron.expandsTo} <code>{result.cron.expression}</code>
             </p>
           )}
           {result.cron.dayOr && (
             <p className="tool-note">
-              Both day fields are restricted, so cron fires when <em>either</em> of them matches.
+              {t.cron.dayOr.before} <em>{t.cron.dayOr.either}</em> {t.cron.dayOr.after}
             </p>
           )}
 
-          <h2 className="tool-heading">Field by field</h2>
+          <h2 className="tool-heading">{t.cron.fieldByField}</h2>
           <ul className="tool-rows cron-breakdown">
             {FIELD_DEFS.map((def) => {
               const field = result.cron.fields[def.key];
               return (
                 <li key={def.key}>
                   <code>{field.raw}</code>
-                  <span className="cron-breakdown-label">{def.label}</span>
-                  <span className="cron-breakdown-value">{describeField(field)}</span>
+                  <span className="cron-breakdown-label">{t.cron.fields[def.key]}</span>
+                  <span className="cron-breakdown-value">{text.describeField(field)}</span>
                 </li>
               );
             })}
           </ul>
 
           <h2 className="tool-heading">
-            Next runs <span className="tool-heading-aside">{localTimeZone}</span>
+            {t.cron.nextRuns} <span className="tool-heading-aside">{localTimeZone}</span>
           </h2>
           {runs.length > 0 ? (
             <ol className="tool-rows cron-runs">
               {runs.map((run) => (
-                <li key={run.toISOString()}>{runFormatter.format(run)}</li>
+                <li key={run.toISOString()}>{formatRun.format(run)}</li>
               ))}
             </ol>
           ) : (
-            <p className="tool-note">
-              This expression never fires — check the day-of-month and month combination.
-            </p>
+            <p className="tool-note">{t.cron.neverFires}</p>
           )}
         </>
       ) : (
         <p className="tool-error" role="alert">
-          {result.error.message}
+          {text.describeError(result.error)}
         </p>
       )}
 
-      <h2 className="tool-heading">Presets</h2>
+      <h2 className="tool-heading">{t.cron.presetsHeading}</h2>
       <div className="tool-chips">
         {PRESETS.map((preset) => (
           <button
@@ -192,14 +193,14 @@ export default function Cron() {
             className="tool-chip"
             onClick={() => update(preset.expression)}
           >
-            {preset.label}
+            {t.cron.presets[preset.key]}
           </button>
         ))}
       </div>
 
-      <h2 className="tool-heading">Syntax</h2>
+      <h2 className="tool-heading">{t.cron.syntaxHeading}</h2>
       <dl className="cron-syntax">
-        {SYNTAX.map((entry) => (
+        {Object.values(t.cron.syntax).map((entry) => (
           <div className="cron-syntax-row" key={entry.symbol}>
             <dt>
               <code>{entry.symbol}</code>

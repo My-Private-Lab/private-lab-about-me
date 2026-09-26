@@ -1,5 +1,10 @@
+import type { Messages } from '../i18n/en';
+
 export interface ProjectItem {
-  title: string;
+  /** Key of the item's title/description in the `data` section of the UI strings. */
+  id: keyof Messages['data'];
+  /** Brand name — used when the strings don't translate the title. */
+  title?: string;
   /** Optional logo shown to the left of the content. */
   logo?: string;
   href: string;
@@ -7,60 +12,50 @@ export interface ProjectItem {
   linkLabel: string;
   /** Set for pages of this site — rendered as a client-side route, not an external link. */
   internal?: boolean;
-  description: string;
 }
 
 // Pet-projects — built in free time to explore tech and solve fun problems.
 export const petProjects: ProjectItem[] = [
   {
-    title: 'Tennis platform',
+    id: 'tennis',
     logo: '/logo-courtcount.png',
     href: 'https://courtcount.ru',
     linkLabel: 'courtcount.ru',
-    description: 'Simplifying tennis tournament scoring for professional referees',
   },
   {
+    id: 'shelfly',
     title: 'Shelfly',
     logo: '/logo-shelfly.svg',
     href: 'https://shelfly.ru',
     linkLabel: 'shelfly.ru',
-    description:
-      'Track your reading progress, keep a shelf of your books, and stay motivated to finish what you start',
   },
   {
+    id: 'cobee',
     title: 'Cobee',
     logo: '/logo-cobee.svg',
     href: 'https://cobee.ru',
     linkLabel: 'cobee.ru',
-    description:
-      'An app that brings small businesses and their customers together in one convenient place',
   },
 ];
 
 // Utils — small tools for personal and team use.
 export const utils: ProjectItem[] = [
   {
-    title: 'JWT Decoder',
+    id: 'jwt',
     href: '/utils/jwt',
     linkLabel: 'isavin.dev/utils/jwt',
     internal: true,
-    description:
-      'Decode & verify JSON Web Tokens right in your browser — nothing leaves the page',
   },
   {
-    title: 'Cron Expression Tool',
+    id: 'cron',
     href: '/utils/cron',
     linkLabel: 'isavin.dev/utils/cron',
     internal: true,
-    description:
-      'Explain any cron string in plain English, see its next runs, and build your own field by field',
   },
   {
-    title: 'Snowflake ID Decoder',
+    id: 'snowflake',
     href: '/utils/snowflake',
     linkLabel: 'isavin.dev/utils/snowflake',
     internal: true,
-    description:
-      'Split a Snowflake ID into timestamp, node and counter — with an adjustable bit layout',
   },
 ];

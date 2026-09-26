@@ -5,12 +5,16 @@ import Utils from './pages/Utils';
 import Cron from './pages/Cron';
 import Jwt from './pages/Jwt';
 import Snowflake from './pages/Snowflake';
+import { LangToggle } from './components/LangToggle';
 import { ThemeToggle } from './components/ThemeToggle';
 
 export default function App() {
   return (
     <>
-      <ThemeToggle />
+      <div className="top-controls">
+        <LangToggle />
+        <ThemeToggle />
+      </div>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/projects" element={<Projects />} />

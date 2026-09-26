@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../i18n';
 import { CheckIcon, CopyIcon } from '../icons';
 
 interface CopyButtonProps {
@@ -10,6 +11,7 @@ interface CopyButtonProps {
 
 /** "Copy" button for the tools — flips to "Copied" until the text changes. */
 export function CopyButton({ text, label, className = '' }: CopyButtonProps) {
+  const { t } = useLang();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => setCopied(false), [text]);
@@ -31,7 +33,7 @@ export function CopyButton({ text, label, className = '' }: CopyButtonProps) {
       aria-label={label}
     >
       {copied ? <CheckIcon /> : <CopyIcon />}
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? t.copied : t.copy}
     </button>
   );
 }

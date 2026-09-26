@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { BackLink } from '../components/BackLink';
 import { CopyButton } from '../components/CopyButton';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { plural, useLang, type Lang } from '../i18n';
 import { SaveIcon, TrashIcon } from '../icons';
 import {
   DEFAULT_COUNTER_BITS,
@@ -74,7 +75,8 @@ function loadHistory(): HistoryItem[] {
 }
 
 export default function Snowflake() {
-  usePageMeta({ title: 'Snowflake ID Decoder — Igor Savin' });
+  const { lang, t } = useLang();
+  usePageMeta({ title: t.pageTitle(t.snowflake.title) });
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [input, setInput] = useState(() => searchParams.get('id') ?? SAMPLE_ID);
@@ -117,13 +119,10 @@ export default function Snowflake() {
   return (
     <main className="card card-projects card-tool">
       <h1>
-        <BackLink to="/utils" label="Back to Utils" />
-        Snowflake ID Decoder
+        <BackLink to="/utils" label={t.backToUtils} />
+        {t.snowflake.title}
       </h1>
-      <p className="description">
-        Split a Snowflake ID into its timestamp, node and counter. Adjust the bit layout to
-        match your generator. Everything happens in your browser.
-      </p>
+      <p className="description">{t.snowflake.description}</p>
 
       <form
         className="tool-input-row"
@@ -142,28 +141,28 @@ export default function Snowflake() {
           autoComplete="off"
           aria-label="Snowflake ID"
           aria-invalid={invalid}
-          placeholder="Snowflake ID, e.g. 4038663563538082816"
+          placeholder={t.snowflake.placeholder}
         />
-        <button type="submit" className="tool-button" disabled={!decoded} aria-label="Save to history">
+        <button type="submit" className="tool-button" disabled={!decoded} aria-label={t.snowflake.saveToHistory}>
           <SaveIcon />
-          <span className="sf-button-text">Save</span>
+          <span className="sf-button-text">{t.snowflake.save}</span>
         </button>
       </form>
 
       <div className="tool-chips sf-actions">
         <button type="button" className="tool-chip" onClick={() => update(SAMPLE_ID)}>
-          Sample ID
+          {t.snowflake.sampleId}
         </button>
         {input !== '' && (
           <button type="button" className="tool-chip" onClick={() => update('')}>
-            Clear
+            {t.clear}
           </button>
         )}
       </div>
 
       {invalid && (
         <p className="tool-error" role="alert">
-          Not a valid ID — enter a whole number up to 9223372036854775807 (Long.MAX_VALUE).
+          {t.snowflake.invalid}
         </p>
       )}
 
@@ -176,20 +175,20 @@ export default function Snowflake() {
             <span className="sf-part-counter">{binary(decoded.counter, layout.counterBits)}</span>
           </p>
 
-          <h2 className="tool-heading">Components</h2>
+          <h2 className="tool-heading">{t.snowflake.components}</h2>
           <ul className="tool-rows sf-parts">
             <Part
               part="timestamp"
               value={decoded.timestamp}
               bits={tsBits}
-              hint={`seconds · wraps after ${timestampRange(tsBits)}`}
+              hint={t.snowflake.timestampHint(formatRange(timestampRange(tsBits), lang))}
             />
             <Part
               part="node"
               label="nodeId"
               value={decoded.nodeId}
               bits={layout.nodeIdBits}
-              hint={`0–${maxValue(layout.nodeIdBits).toLocaleString('en-US')}`}
+              hint={`0–${maxValue(layout.nodeIdBits).toLocaleString(lang)}`}
               canGrow={tsBits > 0}
               onBits={(nodeIdBits) => setLayout((prev) => ({ ...prev, nodeIdBits }))}
             />
@@ -197,19 +196,19 @@ export default function Snowflake() {
               part="counter"
               value={decoded.counter}
               bits={layout.counterBits}
-              hint={`0–${maxValue(layout.counterBits).toLocaleString('en-US')} per second`}
+              hint={`0–${maxValue(layout.counterBits).toLocaleString(lang)} ${t.snowflake.perSecond}`}
               canGrow={tsBits > 0}
               onBits={(counterBits) => setLayout((prev) => ({ ...prev, counterBits }))}
             />
           </ul>
           <p className="tool-note sf-layout-note">
-            64 bits in total: the sign bit is always <code>0</code>, the timestamp gets what the
-            node and counter leave.
+            {t.snowflake.layoutNote.before} <code>0</code>
+            {t.snowflake.layoutNote.after}
           </p>
 
           <div className="tool-heading-row">
-            <h2 className="tool-heading">Generation formula</h2>
-            <CopyButton text={formula} label="Copy formula" className="tool-button-sm" />
+            <h2 className="tool-heading">{t.snowflake.formula}</h2>
+            <CopyButton text={formula} label={t.snowflake.copyFormula} className="tool-button-sm" />
           </div>
           <pre className="tool-code">{formula}</pre>
         </>
@@ -219,11 +218,11 @@ export default function Snowflake() {
         <>
           <div className="tool-heading-row">
             <h2 className="tool-heading">
-              History <span className="tool-heading-aside">last {MAX_HISTORY}</span>
+              {t.snowflake.history} <span className="tool-heading-aside">{t.snowflake.lastN(MAX_HISTORY)}</span>
             </h2>
             <button type="button" className="tool-button tool-button-sm" onClick={() => setHistory([])}>
               <TrashIcon />
-              Clear all
+              {t.snowflake.clearAll}
             </button>
           </div>
           <ul className="tool-rows sf-history">
@@ -233,7 +232,7 @@ export default function Snowflake() {
                   type="button"
                   className="sf-history-id"
                   onClick={() => update(item.snowflakeId)}
-                  aria-label={`Decode ${item.snowflakeId}`}
+                  aria-label={t.snowflake.decode(item.snowflakeId)}
                 >
                   <code>{item.snowflakeId}</code>
                   <span className="sf-history-meta">
@@ -246,7 +245,7 @@ export default function Snowflake() {
                   type="button"
                   className="sf-icon-button"
                   onClick={() => setHistory((prev) => prev.filter((other) => other.id !== item.id))}
-                  aria-label={`Remove ${item.snowflakeId} from history`}
+                  aria-label={t.snowflake.remove(item.snowflakeId)}
                 >
                   <TrashIcon />
                 </button>
@@ -257,6 +256,11 @@ export default function Snowflake() {
       )}
     </main>
   );
+}
+
+/** "68 years" / "68 лет" — Intl knows the unit names and plural forms. */
+function formatRange({ count, unit }: ReturnType<typeof timestampRange>, lang: Lang): string {
+  return new Intl.NumberFormat(lang, { style: 'unit', unit, unitDisplay: 'long' }).format(count);
 }
 
 function binary(value: bigint, bits: number): string {
@@ -281,6 +285,7 @@ function Part({
   canGrow?: boolean;
   onBits?: (bits: number) => void;
 }) {
+  const { lang, t } = useLang();
   return (
     <li>
       <code className={`sf-part-label sf-part-${part}`}>{label}</code>
@@ -295,13 +300,13 @@ function Part({
             className="sf-step"
             onClick={() => onBits(Math.max(1, bits - 1))}
             disabled={bits <= 1}
-            aria-label={`Fewer ${label} bits`}
+            aria-label={t.snowflake.fewerBits(label)}
           >
             −
           </button>
         )}
         <span className="sf-bits-value">
-          {bits} bit{bits === 1 ? '' : 's'}
+          {bits} {plural(lang, bits, t.snowflake.bits)}
         </span>
         {onBits && (
           <button
@@ -309,7 +314,7 @@ function Part({
             className="sf-step"
             onClick={() => onBits(bits + 1)}
             disabled={!canGrow}
-            aria-label={`More ${label} bits`}
+            aria-label={t.snowflake.moreBits(label)}
           >
             +
           </button>

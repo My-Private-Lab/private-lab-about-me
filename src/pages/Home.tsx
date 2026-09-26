@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom';
 import { useTypedRole } from '../hooks/useTypedRole';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { useLang } from '../i18n';
 import { EmailIcon, TelegramIcon, LinkedInIcon, GitHubIcon } from '../icons';
 
 export default function Home() {
-  usePageMeta({ title: 'Igor Savin — Software Engineer & Tech Lead', home: true });
+  const { t } = useLang();
+  usePageMeta({ title: t.home.title, home: true });
   const role = useTypedRole();
 
   return (
     <main className="card">
       <img
         src="/avatar.png"
-        alt="Portrait of Igor Savin"
+        alt={t.home.avatarAlt}
         className="avatar"
         width={120}
         height={120}
@@ -33,10 +35,10 @@ export default function Home() {
         </span>
       </h2>
 
-      <p className="description">Experience in IT since 2009. To be continued&nbsp;…</p>
+      <p className="description">{t.home.description}</p>
 
-      <nav className="social-links" aria-label="Social links">
-        <a href="mailto:costonied@gmail.com" className="icon" aria-label="Email">
+      <nav className="social-links" aria-label={t.home.socialLinks}>
+        <a href="mailto:costonied@gmail.com" className="icon" aria-label={t.home.email}>
           <EmailIcon />
         </a>
         <a
@@ -68,15 +70,15 @@ export default function Home() {
         </a>
       </nav>
 
-      <nav className="nav-links" aria-label="Site sections">
+      <nav className="nav-links" aria-label={t.home.sections}>
         <Link to="/utils" className="projects-link">
-          Utils
+          {t.utils.title}
         </Link>
         <span className="nav-sep" aria-hidden="true">
           /
         </span>
         <Link to="/projects" className="projects-link">
-          Pet-projects
+          {t.projects.title}
         </Link>
       </nav>
     </main>

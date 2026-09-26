@@ -60,11 +60,16 @@ export interface ParsedCron {
   dayOr: boolean;
 }
 
-export interface CronError {
-  message: string;
-  /** Which field the error belongs to, when it can be attributed to one. */
-  field?: CronFieldKey;
-}
+/**
+ * Why an expression didn't parse. Kept as data so each UI language can word
+ * it (see `describeCronError` here and in `cron-ru.ts`). `field` is set when
+ * the error belongs to one field; `token` is the offending piece of it.
+ */
+export type CronError =
+  | { code: 'empty'; field?: undefined }
+  | { code: 'fieldCount'; count: number; field?: undefined }
+  | { code: 'fieldEmpty'; field: CronFieldKey }
+  | { code: 'multipleSteps' | 'badStep' | 'outOfRange' | 'badRange' | 'badValue'; field: CronFieldKey; token: string };
 
 export type CronParseResult = { ok: true; cron: ParsedCron } | { ok: false; error: CronError };
 
@@ -175,7 +180,7 @@ function expandRange(from: number, to: number, step: number, def: FieldDef): num
 function parseField(raw: string, def: FieldDef): ParsedField | CronError {
   const trimmed = raw.trim();
   if (trimmed === '') {
-    return { field: def.key, message: `${def.label} is empty.` };
+    return { code: 'fieldEmpty', field: def.key };
   }
 
   const values = new Set<number>();
@@ -185,13 +190,13 @@ function parseField(raw: string, def: FieldDef): ParsedField | CronError {
     const [base, stepToken, ...rest] = item.split('/');
 
     if (rest.length > 0) {
-      return { field: def.key, message: `${def.label}: "${item}" has more than one step (/).` };
+      return { code: 'multipleSteps', field: def.key, token: item };
     }
 
     let step = 1;
     if (stepToken !== undefined) {
       if (!/^\d+$/.test(stepToken) || Number(stepToken) < 1) {
-        return { field: def.key, message: `${def.label}: step in "${item}" must be a number ≥ 1.` };
+        return { code: 'badStep', field: def.key, token: item };
       }
       step = Number(stepToken);
     }
@@ -208,10 +213,7 @@ function parseField(raw: string, def: FieldDef): ParsedField | CronError {
       const to = parseValue(rangeMatch[1], def);
 
       if (from === undefined || to === undefined) {
-        return {
-          field: def.key,
-          message: `${def.label}: "${base}" is out of the allowed range ${describeAllowed(def)}.`,
-        };
+        return { code: 'outOfRange', field: def.key, token: base };
       }
 
       for (const v of expandRange(from, to, step, def)) values.add(v);
@@ -220,15 +222,12 @@ function parseField(raw: string, def: FieldDef): ParsedField | CronError {
     }
 
     if (rangeMatch.length > 2) {
-      return { field: def.key, message: `${def.label}: "${base}" is not a valid range.` };
+      return { code: 'badRange', field: def.key, token: base };
     }
 
     const single = parseValue(base, def);
     if (single === undefined) {
-      return {
-        field: def.key,
-        message: `${def.label}: "${base}" is not valid here — expected ${describeAllowed(def)}.`,
-      };
+      return { code: 'badValue', field: def.key, token: base };
     }
 
     if (step > 1) {
@@ -253,13 +252,18 @@ function parseField(raw: string, def: FieldDef): ParsedField | CronError {
   };
 }
 
-function describeAllowed(def: FieldDef): string {
-  const aliases = def.aliases ? ` or ${Object.keys(def.aliases).slice(0, 3).join('/')}…` : '';
+/** Allowed values of a field, e.g. "1-12 or JAN/FEB/MAR…"; `or` is the joining word. */
+export function describeAllowed(def: FieldDef, or = 'or'): string {
+  const aliases = def.aliases ? ` ${or} ${Object.keys(def.aliases).slice(0, 3).join('/')}…` : '';
   return `${def.min}-${def.max}${aliases}`;
 }
 
+export function fieldDef(key: CronFieldKey): FieldDef {
+  return FIELD_DEFS.find((def) => def.key === key)!;
+}
+
 function isCronError(value: ParsedField | CronError): value is CronError {
-  return 'message' in value;
+  return 'code' in value;
 }
 
 /** Splits an expression into its fields, collapsing repeated whitespace. */
@@ -274,18 +278,11 @@ export function parseCron(expression: string): CronParseResult {
   const tokens = splitFields(source);
 
   if (tokens.length === 0) {
-    return { ok: false, error: { message: 'Enter a cron expression to get started.' } };
+    return { ok: false, error: { code: 'empty' } };
   }
 
   if (tokens.length !== FIELD_DEFS.length) {
-    return {
-      ok: false,
-      error: {
-        message:
-          `Expected 5 fields (minute hour day-of-month month day-of-week), got ${tokens.length}. ` +
-          'Seconds and year fields (Quartz style) are not supported.',
-      },
-    };
+    return { ok: false, error: { code: 'fieldCount', count: tokens.length } };
   }
 
   const fields = {} as Record<CronFieldKey, ParsedField>;
@@ -311,7 +308,7 @@ export function parseCron(expression: string): CronParseResult {
    Descriptions
    =========================================================== */
 
-const pad = (value: number) => String(value).padStart(2, '0');
+export const pad = (value: number) => String(value).padStart(2, '0');
 
 function joinList(items: string[]): string {
   if (items.length <= 1) return items[0] ?? '';
@@ -320,13 +317,13 @@ function joinList(items: string[]): string {
 }
 
 /** Step applied to the whole field with a wildcard base, as in every-15-minutes. */
-function stepOfWholeField(field: ParsedField): number | undefined {
+export function stepOfWholeField(field: ParsedField): number | undefined {
   const [part] = field.parts;
   if (field.parts.length === 1 && part.kind === 'all' && part.step > 1) return part.step;
   return undefined;
 }
 
-function isContiguous(values: number[]): boolean {
+export function isContiguous(values: number[]): boolean {
   return values.every((value, index) => index === 0 || value === values[index - 1] + 1);
 }
 
@@ -432,6 +429,33 @@ export function describeCron(cron: ParsedCron): string {
   }
 
   return `${clauses.join(', ')}.`;
+}
+
+/** The parse error as an English sentence. */
+export function describeCronError(error: CronError): string {
+  if (error.code === 'empty') return 'Enter a cron expression to get started.';
+  if (error.code === 'fieldCount') {
+    return (
+      `Expected 5 fields (minute hour day-of-month month day-of-week), got ${error.count}. ` +
+      'Seconds and year fields (Quartz style) are not supported.'
+    );
+  }
+
+  const def = fieldDef(error.field);
+  switch (error.code) {
+    case 'fieldEmpty':
+      return `${def.label} is empty.`;
+    case 'multipleSteps':
+      return `${def.label}: "${error.token}" has more than one step (/).`;
+    case 'badStep':
+      return `${def.label}: step in "${error.token}" must be a number ≥ 1.`;
+    case 'outOfRange':
+      return `${def.label}: "${error.token}" is out of the allowed range ${describeAllowed(def)}.`;
+    case 'badRange':
+      return `${def.label}: "${error.token}" is not a valid range.`;
+    case 'badValue':
+      return `${def.label}: "${error.token}" is not valid here — expected ${describeAllowed(def)}.`;
+  }
 }
 
 /* ===========================================================
