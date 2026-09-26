@@ -110,6 +110,8 @@ export default function Cron() {
           spellCheck={false}
           autoCapitalize="off"
           autoCorrect="off"
+          autoComplete="off"
+          enterKeyHint="done"
           aria-label="Cron expression"
           aria-invalid={!result.ok}
           placeholder="* * * * *"
@@ -131,6 +133,8 @@ export default function Cron() {
               spellCheck={false}
               autoCapitalize="off"
               autoCorrect="off"
+              autoComplete="off"
+              enterKeyHint="done"
               aria-label={def.label}
             />
             <span className="cron-field-hint">

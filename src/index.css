@@ -17,6 +17,10 @@
     --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
     --radius: 12px;
+
+    /* Page gutter; the safe-area max() below keeps content clear of notches
+       and the home indicator in landscape. */
+    --gutter: 24px;
 }
 
 /* ===========================================================
@@ -26,6 +30,28 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+html {
+    color-scheme: dark;              /* native controls & scrollbars match the theme */
+    -webkit-text-size-adjust: 100%;  /* no font inflation on iOS rotation */
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent; /* focus/active styles below replace it */
+}
+
+/* Remove the double-tap-to-zoom delay on interactive elements
+   (pinch-zoom stays available). */
+a,
+button,
+input,
+label {
+    touch-action: manipulation;
+}
+
+/* Form controls don't inherit fonts by default. */
+button,
+input {
+    font: inherit;
 }
 
 body {
@@ -38,7 +64,11 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 24px;
+    padding: var(--gutter);
+    padding-top: max(var(--gutter), env(safe-area-inset-top));
+    padding-right: max(var(--gutter), env(safe-area-inset-right));
+    padding-bottom: max(var(--gutter), env(safe-area-inset-bottom));
+    padding-left: max(var(--gutter), env(safe-area-inset-left));
 }
 
 /* React mount point is the flex item of <body>. Stretch it to full width so
@@ -147,7 +177,6 @@ h1 strong {
     display: block;
 }
 
-.icon:hover,
 .icon:focus-visible {
     color: var(--accent);
     transform: translateY(-2px);
@@ -175,7 +204,6 @@ h1 strong {
     transition: border-color 0.25s ease, opacity 0.25s ease;
 }
 
-.projects-link:hover,
 .projects-link:focus-visible {
     border-color: var(--accent);
     outline: none;
@@ -215,10 +243,6 @@ h1 strong {
     transition: border-color 0.25s ease, transform 0.25s ease;
 }
 
-.project:hover {
-    border-color: var(--accent-dim);
-    transform: translateY(-2px);
-}
 
 .project-logo {
     flex-shrink: 0;
@@ -253,7 +277,6 @@ h1 strong {
     transition: border-color 0.25s ease;
 }
 
-.project-link:hover,
 .project-link:focus-visible {
     border-color: var(--accent);
     outline: none;
@@ -287,7 +310,7 @@ body.home {
     body.home {
         height: 100dvh;
         overflow: hidden; /* the home card always fits — never scrolls */
-        padding: 16px;
+        --gutter: 16px;
     }
 
     body.home .card {
@@ -312,7 +335,7 @@ body.home {
     /* Projects & Utils — reclaim horizontal space on mobile.
        Trim padding at every nesting level (body → card → project). */
     body:not(.home) {
-        padding: 12px;
+        --gutter: 12px;
     }
 
     .card-projects {
@@ -391,7 +414,6 @@ body.home {
     transition: border-color 0.25s ease;
 }
 
-.cron-copy:hover,
 .cron-copy:focus-visible {
     border-color: var(--accent);
     outline: none;
@@ -568,7 +590,6 @@ body.home {
     transition: color 0.25s ease, border-color 0.25s ease;
 }
 
-.cron-preset:hover,
 .cron-preset:focus-visible {
     color: var(--accent);
     border-color: var(--accent);
@@ -643,6 +664,85 @@ body.home {
     .cron-syntax-row {
         grid-template-columns: 1fr;
         gap: 2px;
+    }
+}
+
+/* ===========================================================
+   Hover effects — only on devices with a real pointer.
+   On touch screens :hover "sticks" after a tap, leaving cards lifted
+   and links underlined until the user taps elsewhere.
+   =========================================================== */
+@media (hover: hover) and (pointer: fine) {
+    .icon:hover {
+        color: var(--accent);
+        transform: translateY(-2px);
+    }
+
+    .projects-link:hover,
+    .project-link:hover,
+    .cron-copy:hover {
+        border-color: var(--accent);
+    }
+
+    .project:hover {
+        border-color: var(--accent-dim);
+        transform: translateY(-2px);
+    }
+
+    .cron-preset:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+    }
+}
+
+/* ===========================================================
+   Touch devices
+   =========================================================== */
+@media (pointer: coarse) {
+    /* iOS Safari zooms the page when a focused field's font is < 16px. */
+    input,
+    select,
+    textarea,
+    .cron-input,
+    .cron-field-input {
+        font-size: 16px;
+    }
+
+    /* Give small targets a ~44px hit area without changing the layout:
+       padding grows the target, a matching negative margin cancels it. */
+    .social-links {
+        gap: 0;
+        margin: -11px 0 -7px;
+    }
+
+    .icon {
+        padding: 11px;
+    }
+
+    .nav-links {
+        gap: 2px;
+    }
+
+    .projects-link {
+        padding: 12px 6px;
+        margin: -8px 0;
+    }
+
+    .cron-preset {
+        padding: 10px 14px;
+    }
+
+    .cron-copy {
+        min-width: 44px;
+    }
+
+    /* Visible feedback on tap now that the grey tap highlight is gone. */
+    .icon:active,
+    .projects-link:active,
+    .project-link:active,
+    .cron-copy:active,
+    .cron-preset:active {
+        opacity: 0.7;
     }
 }
 
